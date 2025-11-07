@@ -66,6 +66,7 @@
                                                 data-event-id="{{ event.id }}"
                                                 data-option-type="{{ option.event_type }}"
                                                 data-fee="{{ option.fee }}"
+                                                data-event-name="{{ event.name }}"
                                             >
                                         </div>
                                         
@@ -86,12 +87,7 @@
                                                     {% endif %}
                                                 </div>
                                                 
-                                                <div class="text-sm text-gray-600 mt-1">
-                                                    Registration fee: <span class="font-semibold text-green-600">৳{{ option.fee }}</span>
-                                                    {% if option.max_participants %}
-                                                        | Max participants: {{ option.max_participants }}
-                                                    {% endif %}
-                                                </div>
+
                                             </label>
                                         </div>
                                     </div>

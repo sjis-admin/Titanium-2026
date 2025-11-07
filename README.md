@@ -1,7 +1,7 @@
 # README.md
-# Josephite Tech Club Registration System
+# SJIS Math Club Registration System
 
-A comprehensive Django web application for managing student registrations for the Josephite Tech Carnival 2025. Features include online registration, SSL Commerz payment integration, automated email confirmations, and a powerful admin dashboard.
+A comprehensive Django web application for managing student registrations for the SJIS Math Club 2025. Features include online registration, SSL Commerz payment integration, automated email confirmations, and a powerful admin dashboard.
 
 ## Features
 
@@ -42,7 +42,7 @@ A comprehensive Django web application for managing student registrations for th
 1. **Clone the Repository**
 ```bash
 git clone <repository-url>
-cd josephite_tech_club
+cd sjis_math_club
 ```
 
 2. **Create Virtual Environment**
@@ -125,9 +125,8 @@ EMAIL_HOST_PASSWORD=your-app-password  # Use App Password, not regular password
 
 ## Project Structure
 
-```
-josephite_tech_club/
-├── josephite_tech_club/
+sjis_math_club/
+├── sjis_math_club/
 │   ├── settings.py
 │   ├── urls.py
 │   └── wsgi.py
@@ -266,7 +265,7 @@ python manage.py migrate
 python manage.py collectstatic --noinput
 
 # Run with Gunicorn
-gunicorn josephite_tech_club.wsgi:application --bind 0.0.0.0:8000
+gunicorn sjis_math_club.wsgi:application --bind 0.0.0.0:8000
 ```
 
 ## Troubleshooting
@@ -348,7 +347,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      POSTGRES_DB: josephite_tech_club
+      POSTGRES_DB: sjis_math_club
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -365,7 +364,7 @@ services:
       - db
     environment:
       - DB_HOST=db
-      - DB_NAME=josephite_tech_club
+      - DB_NAME=sjis_math_club
       - DB_USER=postgres
       - DB_PASSWORD=postgres
 
@@ -384,4 +383,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]# Josephite-Tech-Club
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]# sjis_math_club

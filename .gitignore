@@ -1,34 +1,35 @@
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Django
-db.sqlite3
-staticfiles/
-media/
-
-# Environment
-.env
+*.py[cod]
+*$py.class
+*.so
+.Python
 venv/
 env/
+ENV/
 
-# Logs
-logs/
+# Django
 *.log
-
-# macOS
-.DS_Store
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
 
 # Node
 node_modules/
+npm-debug.log
+yarn-error.log
 
-# Build artifacts
-.dist/
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Production-only configs
-# josephite_tech_club/settings.py
-# *.backup*
-# gunicorn.conf.py
-# start_gunicorn.sh
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local

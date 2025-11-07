@@ -2,7 +2,7 @@
 {% extends 'base.html' %}
 {% load price_filters %}
 
-{% block title %}Josephite Tech Carnival 2025 - Registration{% endblock %}
+{% block title %}SJIS Math Club 2025 - Registration{% endblock %}
 
 {% block extra_head %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -180,10 +180,10 @@
         <div class="hero-content w-full px-4 sm:px-8 h-full flex flex-col justify-center">
             <div class="max-w-4xl mx-auto text-center">
                 <h1 class="tech-title text-3xl sm:text-4xl md:text-6xl font-bold mb-6">
-                    SJIS 1ST INTERSCHOOL TECH CARNIVAL 2025
+                    1ST INTER-SCHOOL MATH FESTIVAL 2025
                 </h1>
                 <p class="text-lg sm:text-xl md:text-2xl mb-8 text-blue-100">
-                    Join the Ultimate Technology Competition & Showcase
+                    Join the Ultimate Math Competition & Showcase
                 </p>
                 {% if countdown %}
                 <div id="countdown-container" class="text-white text-center mb-8">
@@ -209,23 +209,23 @@
                 </div>
                 {% else %}
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-8 text-white">
-                    <div class="flex flex-col items-center justify-center bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 sm:p-6 transform hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-gamepad text-4xl text-green-300 mb-2"></i>
-                        <span class="font-semibold">Gaming</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 sm:p-6 transform hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-code text-4xl text-blue-300 mb-2"></i>
-                        <span class="font-semibold">Coding</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 sm:p-6 transform hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-robot text-4xl text-purple-300 mb-2"></i>
-                        <span class="font-semibold">Robotics</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 sm:p-6 transform hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-vr-cardboard text-4xl text-pink-300 mb-2"></i>
-                        <span class="font-semibold">VR/AR</span>
-                    </div>
+                <div class="flex flex-col items-center justify-center bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 sm:p-6 transform hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-calculator text-4xl text-green-300 mb-2"></i>
+                    <span class="font-semibold">Math Quiz</span>
                 </div>
+                <div class="flex flex-col items-center justify-center bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 sm:p-6 transform hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-brain text-4xl text-blue-300 mb-2"></i>
+                    <span class="font-semibold">Problem Solving</span>
+                </div>
+                <div class="flex flex-col items-center justify-center bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 sm:p-6 transform hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-puzzle-piece text-4xl text-purple-300 mb-2"></i>
+                    <span class="font-semibold">Puzzle Challenge</span>
+                </div>
+                <div class="flex flex-col items-center justify-center bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 sm:p-6 transform hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-chalkboard-teacher text-4xl text-pink-300 mb-2"></i>
+                    <span class="font-semibold">Math Exhibition</span>
+                </div>
+            </div>
                 {% endif %}
                 <a href="{% url 'register' %}" class="register-now-btn inline-flex items-center bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg">
                     <i class="fas fa-rocket mr-2"></i>
@@ -330,7 +330,7 @@
     <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8 mb-12 border-t-4 border-primary">
         <h2 class="text-2xl sm:text-3xl font-bold text-center mb-8 text-gray-900">
             <i class="fas fa-star text-yellow-500 mr-2"></i>
-            Why Join Josephite Tech Carnival?
+            Why Join SJIS Math Club?
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="text-center group">
@@ -352,14 +352,14 @@
                     <i class="fas fa-users text-purple-600 text-2xl"></i>
                 </div>
                 <h3 class="font-semibold mb-2">Network</h3>
-                <p class="text-gray-600 text-sm">Meet like-minded tech enthusiasts</p>
+                <p class="text-gray-600 text-sm">Meet like-minded math enthusiasts</p>
             </div>
             <div class="text-center group">
                 <div class="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-yellow-200 transition-colors">
                     <i class="fas fa-lightbulb text-yellow-600 text-2xl"></i>
                 </div>
                 <h3 class="font-semibold mb-2">Learn & Grow</h3>
-                <p class="text-gray-600 text-sm">Enhance your technical skills</p>
+                <p class="text-gray-600 text-sm">Enhance your math skills</p>
             </div>
         </div>
     </div>
@@ -389,7 +389,7 @@
             <div class="text-center">
                 <div class="bg-yellow-500 text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold shadow-lg">4</div>
                 <h3 class="font-semibold mb-2">Participate</h3>
-                <p class="text-gray-600 text-sm">Join the carnival and compete!</p>
+                <p class="text-gray-600 text-sm">Join the Festival and compete!</p>
             </div>
         </div>
     </div>

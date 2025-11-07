@@ -2,7 +2,7 @@
 {% extends 'base.html' %}
 {% load math_filters %}
 
-{% block title %}Reports & Analytics - Josephite Tech Club{% endblock %}
+{% block title %}Reports & Analytics - SJIS Math Club{% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-gray-50">
@@ -42,6 +42,14 @@
                                 <div>
                                     <div class="font-medium text-gray-900">Paid Students Only</div>
                                     <div class="text-xs text-gray-500">Successfully paid registrations</div>
+                                </div>
+                            </a>
+
+                            <a href="{% url 'export_valorant_applications' %}" class="flex items-center px-4 py-3 hover:bg-red-50 transition-colors">
+                                <i class="fas fa-gamepad text-red-500 mr-3"></i>
+                                <div>
+                                    <div class="font-medium text-gray-900">Valorant Applications</div>
+                                    <div class="text-xs text-gray-500">Export all Valorant applications</div>
                                 </div>
                             </a>
                             

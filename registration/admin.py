@@ -9,7 +9,7 @@ from django.db.models import Count
 from .models import (Student, Event, EventOption, Payment, AdminLog, Receipt, 
                     StudentEventRegistration, School, Countdown, 
                     HomePageAsset, SocialMediaProfile, TeamMemberProfile, PastEventImage,
-                    ValorantBackgroundVideo, SiteLogo, Grade)
+                    ValorantBackgroundVideo, SiteLogo, Grade, ValorantApplicationSettings)
 
 @admin.register(TeamMemberProfile)
 class TeamMemberProfileAdmin(admin.ModelAdmin):
@@ -242,3 +242,9 @@ class EventAdmin(admin.ModelAdmin):
 
     class Media:
         js = ('admin/js/event_admin.js',)
+
+
+
+@admin.register(ValorantApplicationSettings)
+class ValorantApplicationSettingsAdmin(admin.ModelAdmin):
+    list_display = ('is_enabled',)

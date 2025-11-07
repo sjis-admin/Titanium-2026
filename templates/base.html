@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}JTC 2025{% endblock %}</title>
+    <title>{% block title %}JMT 2025{% endblock %}</title>
     {% block styles %}{% endblock %}
     <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -101,8 +101,8 @@
                         {% else %}
                             <i class="fas fa-code text-primary text-2xl mr-2"></i>
                         {% endif %}
-                        <span class="font-bold text-xl text-gray-900 hidden sm:block">Josephite Tech Club</span>
-                        <span class="font-bold text-lg text-gray-900 sm:hidden">JTC</span>
+                        <span class="font-bold text-xl text-gray-900 hidden sm:block">SJIS Math Club</span>
+                        <span class="font-bold text-lg text-gray-900 sm:hidden">JMT</span>
                     </div>
                 </div>
 
@@ -120,9 +120,7 @@
                     <a href="{% url 'join_us' %}" class="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
                         <i class="fas fa-users mr-1"></i>Join Us
                     </a>
-                    <a href="{% url 'valorant_page' %}" class="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        <i class="fas fa-gamepad mr-1"></i>Valorant
-                    </a>
+                    
                     <a href="{% url 'register' %}" class="bg-primary text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium transition-colors">
                         <i class="fas fa-user-plus mr-1"></i>Register Now
                     </a>
@@ -162,9 +160,7 @@
                 <a href="{% url 'join_us' %}" class="block text-gray-700 hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium transition-colors">
                     <i class="fas fa-users mr-2"></i>Join Us
                 </a>
-                <a href="{% url 'valorant_page' %}" class="block text-gray-700 hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium transition-colors">
-                    <i class="fas fa-gamepad mr-2"></i>Valorant
-                </a>
+                
                 <a href="{% url 'register' %}" class="block bg-primary text-white hover:bg-blue-700 px-3 py-2 rounded-md text-base font-medium transition-colors">
                     <i class="fas fa-user-plus mr-2"></i>Register Now
                 </a>
@@ -222,7 +218,7 @@
                 <div>
                     <h3 class="font-semibold text-lg mb-4">Contact Info</h3>
                     <div class="space-y-2">
-                        <p class="text-gray-300"><i class="fas fa-envelope mr-2"></i>jtc@sjis.edu.bd</p>
+                        <p class="text-gray-300"><i class="fas fa-envelope mr-2"></i>sjismathclub@gmail.com</p>
                         <p class="text-gray-300"><i class="fas fa-phone mr-2"></i>01704010877</p>
                         <p class="text-gray-300"><i class="fas fa-map-marker-alt mr-2"></i>97, Asad Avenue, Mohammadpur, Dhaka-1207, Bangladesh</p>
                     </div>

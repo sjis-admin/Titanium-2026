@@ -169,7 +169,7 @@ class Student(models.Model):
 
         if not self.registration_id:
             current_year = timezone.now().strftime('%y')
-            prefix = f'JTC{current_year}'
+            prefix = f'JMC{current_year}'
             last_student = Student.objects.filter(registration_id__startswith=prefix).order_by('registration_id').last()
             
             if last_student:
@@ -268,7 +268,10 @@ class Student(models.Model):
     
     def calculate_total_amount(self):
         """Calculate and update total amount"""
-        total = sum([event.fee for event in self.events.all()])
+        if self.events.count() > 0:
+            total = Decimal('500.00')
+        else:
+            total = Decimal('0.00')
         self.total_amount = total
         # Regenerate hash when amount changes
         self.payment_verification_hash = self.generate_verification_hash()
@@ -310,6 +313,15 @@ class TeamMember(models.Model):
 
     def __str__(self):
         return f'{self.name} - {self.team.name}'
+
+class ValorantTeamMember(models.Model):
+    team_member = models.OneToOneField(TeamMember, on_delete=models.CASCADE, related_name='valorant_info')
+    discord_ign = models.CharField(max_length=100, help_text="Discord IGN (e.g., username#1234)")
+    riot_ign = models.CharField(max_length=100, help_text="Riot IGN (e.g., username#NA1)")
+    contact_number = models.CharField(max_length=20, help_text="Contact number for the team member")
+
+    def __str__(self):
+        return f"Valorant Info for {self.team_member.name}"
 
 class Payment(models.Model):
     PAYMENT_STATUS_CHOICES = [
@@ -492,9 +504,9 @@ class Receipt(models.Model):
                 last_receipt = Receipt.objects.select_for_update().order_by('id').last()
                 if last_receipt:
                     last_number = int(last_receipt.receipt_number.split('-')[1])
-                    self.receipt_number = f"JTC2025-{last_number + 1:04d}"
+                    self.receipt_number = f"JMT2025-{last_number + 1:04d}"
                 else:
-                    self.receipt_number = "JTC2025-0001"
+                    self.receipt_number = "JMT2025-0001"
         super().save(*args, **kwargs)
     
     def record_download(self):
@@ -615,3 +627,11 @@ class SiteLogo(models.Model):
 
     def __str__(self):
         return self.name
+
+
+
+class ValorantApplicationSettings(models.Model):
+    is_enabled = models.BooleanField(default=False, help_text="Enable or disable Valorant applications")
+
+    def __str__(self):
+        return "Valorant Application Settings"

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Valorant Application - SJIS Math Club{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold text-center text-white mb-8">Valorant Tournament Application</h1>
+
+    <div class="max-w-2xl mx-auto bg-gray-800 rounded-lg shadow-lg p-8">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-6">
+                <label for="{{ form.discord_ign.id_for_label }}" class="block text-lg font-medium text-gray-300 mb-2">Discord IGN</label>
+                {{ form.discord_ign }}
+                {% if form.discord_ign.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.discord_ign.errors|first }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-6">
+                <label for="{{ form.riot_ign.id_for_label }}" class="block text-lg font-medium text-gray-300 mb-2">Riot IGN</label>
+                {{ form.riot_ign }}
+                {% if form.riot_ign.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.riot_ign.errors|first }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-6">
+                <label for="{{ form.contact_number.id_for_label }}" class="block text-lg font-medium text-gray-300 mb-2">Contact Number</label>
+                {{ form.contact_number }}
+                {% if form.contact_number.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.contact_number.errors|first }}</p>
+                {% endif %}
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
+                    Submit Application
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

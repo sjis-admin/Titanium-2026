@@ -1,5 +1,5 @@
 """
-ASGI config for josephite_tech_club project.
+ASGI config for sjis_math_club project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'josephite_tech_club.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sjis_math_club.settings')
 
 application = get_asgi_application()

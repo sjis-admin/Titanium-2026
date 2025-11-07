@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 from .models import (Student, Event, EventOption, Payment, Receipt, 
                     StudentEventRegistration, PaymentAttempt, School, Grade,
                     Team, TeamMember, Countdown, HomePageAsset, SocialMediaProfile,
-                    TeamMemberProfile, PastEventImage, ValorantBackgroundVideo)
+                    TeamMemberProfile, PastEventImage, ValorantBackgroundVideo, ValorantApplicationSettings)
 from .forms import StudentRegistrationForm
 from .sslcommerz import SSLCOMMERZ
 
@@ -134,7 +134,7 @@ def student_registration(request):
                             request,
                             f'You have already completed registration with ID: {student.registration_id}. '
                             'Please check your email for the receipt. If you need to register for additional events, '
-                            'please contact support at jtc@sjis.edu.bd'
+                            'contact us at sjismathclub@gmail.com'
                         )
                         return redirect('home')
 
@@ -210,7 +210,10 @@ def student_registration(request):
                         raise ValueError("No valid events to register for.")
                     
                     # Calculate amounts
-                    subtotal = sum(o.fee for o in events_to_register)
+                    if events_to_register:
+                        subtotal = Decimal('500.00')
+                    else:
+                        subtotal = Decimal('0.00')
                     fee_percentage = Decimal(getattr(settings, 'SSLCOMMERZ_FEE_PERCENTAGE', '0.015'))
                     fee = (subtotal * fee_percentage).quantize(Decimal('0.01'))
                     total_amount = subtotal + fee
@@ -252,20 +255,34 @@ def student_registration(request):
                             leader_index = request.POST.get(f'team_leader_{option.id}', '0')
                             
                             # Add team members
-                            TeamMember.objects.create(
+                            team_member = TeamMember.objects.create(
                                 team=team, 
                                 name=student.name, 
                                 is_leader=(leader_index == '0')
                             )
+                            if option.event.name == 'Valorant':
+                                ValorantTeamMember.objects.create(
+                                    team_member=team_member,
+                                    discord_ign=request.POST.get(f'team_member_{option.id}_0_discord_ign', '').strip(),
+                                    riot_ign=request.POST.get(f'team_member_{option.id}_0_riot_ign', '').strip(),
+                                    contact_number=request.POST.get(f'team_member_{option.id}_0_contact_number', '').strip(),
+                                )
                             
                             for i in range(1, option.max_team_size or 2):
-                                member_name = request.POST.get(f'team_member_{option.id}_{i}', '').strip()
+                                member_name = request.POST.get(f'team_member_{option.id}_{i}_name', '').strip()
                                 if member_name:
-                                    TeamMember.objects.create(
+                                    team_member = TeamMember.objects.create(
                                         team=team, 
                                         name=member_name, 
                                         is_leader=(leader_index == str(i))
                                     )
+                                    if option.event.name == 'Valorant':
+                                        ValorantTeamMember.objects.create(
+                                            team_member=team_member,
+                                            discord_ign=request.POST.get(f'team_member_{option.id}_{i}_discord_ign', '').strip(),
+                                            riot_ign=request.POST.get(f'team_member_{option.id}_{i}_riot_ign', '').strip(),
+                                            contact_number=request.POST.get(f'team_member_{option.id}_{i}_contact_number', '').strip(),
+                                        )
                             
                             logger.info(f"Team {team_name} created")
                     
@@ -297,7 +314,7 @@ def student_registration(request):
                 logger.error(f'Registration error: {e}', exc_info=True)
                 messages.error(
                     request, 
-                    'An unexpected error occurred. Please try again or contact support at jtc@sjis.edu.bd'
+                    'An unexpected error occurred. Please try again or contact support at sjismathclub@gmail.com'
                 )
                 return render(request, 'registration/register.html', {'form': form})
         else:
@@ -597,9 +614,11 @@ def calculate_total(request):
             return render(request, 'registration/_total_display.html', {'subtotal': 0, 'fee': 0, 'total': 0})
 
         event_option_ids = [int(id) for id in selected_events_str.split(',') if id.isdigit()]
-        event_options = EventOption.objects.filter(id__in=event_option_ids, event__is_active=True)
-
-        subtotal = sum(option.fee for option in event_options)
+        
+        if event_option_ids:
+            subtotal = Decimal('500.00')
+        else:
+            subtotal = Decimal('0.00')
         
         # Calculate SSLCommerz fee (e.g., 1.5%)
         fee_percentage = Decimal(getattr(settings, 'SSLCOMMERZ_FEE_PERCENTAGE', '0.015'))
@@ -1267,7 +1286,7 @@ def send_registration_email(student, receipt):
     Send registration confirmation email with receipt asynchronously.
     """
     try:
-        subject = f'JTC 2025 Registration Confirmation - {student.name}'
+        subject = f'JMT 2025 Registration Confirmation - {student.name}'
         
         # Prepare context for email template
         context = {
@@ -1586,10 +1605,19 @@ def join_us(request):
 
 def valorant_page(request):
     video = ValorantBackgroundVideo.objects.filter(is_active=True).first()
+    try:
+        valorant_settings = ValorantApplicationSettings.objects.first()
+        is_enabled = valorant_settings.is_enabled if valorant_settings else False
+    except ValorantApplicationSettings.DoesNotExist:
+        is_enabled = False
+
     context = {
         'video': video,
+        'valorant_registration_enabled': is_enabled,
     }
     return render(request, 'registration/valorant.html', context)
+
+
 
 
 

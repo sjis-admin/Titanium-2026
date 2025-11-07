@@ -16,6 +16,27 @@ from django.contrib.auth import logout
 from io import BytesIO
 from .views import send_registration_email
 from .forms import BulkSchoolForm
+import csv
+
+@staff_member_required
+def export_valorant_applications(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="valorant_applications.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Team Name', 'Member Name', 'Discord IGN', 'Riot IGN', 'Contact Number'])
+
+    applications = ValorantTeamMember.objects.select_related('team_member__team').all()
+    for application in applications:
+        writer.writerow([
+            application.team_member.team.name,
+            application.team_member.name,
+            application.discord_ign,
+            application.riot_ign,
+            application.contact_number,
+        ])
+
+    return response
 
 @staff_member_required
 def print_detailed_report_pdf(request):
@@ -28,7 +49,7 @@ def print_detailed_report_pdf(request):
     }
     # Create a Django response object, and specify content_type as pdf
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="JTC_Detailed_Registration_Report_{}.pdf"'.format(timezone.now().strftime('%Y-%m-%d'))
+    response['Content-Disposition'] = 'attachment; filename="JMT_Detailed_Registration_Report_{}.pdf"'.format(timezone.now().strftime('%Y-%m-%d'))
     # find the template and render it.
     template = get_template(template_path)
     html = template.render(context)
@@ -41,7 +62,7 @@ def print_detailed_report_pdf(request):
        return HttpResponse('We had some errors <pre>' + html + '</pre>')
     return response
 
-from .models import Student, Event, Payment, AdminLog, Receipt, StudentEventRegistration, School, Grade
+from .models import Student, Event, Payment, AdminLog, Receipt, StudentEventRegistration, School, Grade, ValorantTeamMember
 from .utils import log_admin_action, get_client_ip, export_detailed_report_csv
 
 @staff_member_required
@@ -57,7 +78,7 @@ def export_detailed_report(request):
         
         # Create response
         response = HttpResponse(csv_content, content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="JTC2025_Comprehensive_Report_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        response['Content-Disposition'] = f'attachment; filename="JMT2025_Comprehensive_Report_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
         
         # Log the export action
         log_admin_action(
@@ -91,7 +112,7 @@ def export_paid_students_only(request):
         
         # Create response
         response = HttpResponse(csv_content, content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="JTC2025_Paid_Students_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        response['Content-Disposition'] = f'attachment; filename="JMT2025_Paid_Students_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
         
         # Log the export action
         log_admin_action(

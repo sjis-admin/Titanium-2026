@@ -41,7 +41,7 @@ class SSLCOMMERZ:
             'cus_postcode': cus_postcode or '1000',
             'cus_country': cus_country or 'Bangladesh',
             'shipping_method': 'NO',
-            'product_name': 'JTC 2025 Registration',
+            'product_name': 'JMT 2025 Registration',
             'product_category': 'Registration',
             'product_profile': 'general',
             # Add security parameters

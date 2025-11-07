@@ -21,6 +21,7 @@ urlpatterns = [
     path('events/', views.events_page, name='events_page'),
     path('about-us/', views.about_us, name='about_us'),
     path('valorant/', views.valorant_page, name='valorant_page'),
+
     path('join-us/', views.join_us, name='join_us'),
     
     # Events API endpoints
@@ -67,6 +68,7 @@ urlpatterns = [
     path('dashboard/reports/export-comprehensive/', admin_views.export_detailed_report, name='export_detailed_report'),
     path('dashboard/reports/export-paid-only/', admin_views.export_paid_students_only, name='export_paid_students_only'),
     path('dashboard/reports/print/', admin_views.print_detailed_report_pdf, name='print_detailed_report'),
+    path('dashboard/reports/export-valorant/', admin_views.export_valorant_applications, name='export_valorant_applications'),
     
     # Admin actions
     path('dashboard/verify-payment/<int:payment_id>/', admin_views.verify_payment, name='verify_payment'),

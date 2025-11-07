@@ -81,7 +81,7 @@ class StudentRegistrationForm(forms.ModelForm):
         
         try:
             event_option_ids = []
-            cleaned_string = selected_events_str.replace('"', '').replace("'", "").strip()
+            cleaned_string = selected_events_str.replace('"', '').replace("'", '').strip()
             
             if cleaned_string.startswith('[') and cleaned_string.endswith(']'):
                 cleaned_string = cleaned_string.strip('[]')

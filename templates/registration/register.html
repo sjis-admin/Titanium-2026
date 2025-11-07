@@ -1,7 +1,7 @@
 <!-- templates/registration/register.html - PROFESSIONAL VERSION -->
 {% extends 'base.html' %}
 
-{% block title %}Register - Josephite Tech Carnival 2025{% endblock %}
+{% block title %}Register - SJIS Math Club 2025{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -9,9 +9,9 @@
     <div class="text-center mb-8">
         <h1 class="text-4xl font-bold text-gray-800 mb-4">
             <i class="fas fa-user-plus text-primary mr-2"></i>
-            Register for Tech Carnival 2025
+            Register for Math Festival 2025
         </h1>
-        <p class="text-gray-600 text-lg">Join the ultimate technology competition and showcase your skills!</p>
+        <p class="text-gray-600 text-lg">Join the ultimate math competition and showcase your skills!</p>
     </div>
 
     <!-- Registration Form -->
@@ -191,6 +191,8 @@
                 {% if form.selected_events.errors %}
                     <div class="text-red-500 text-sm mt-2">{{ form.selected_events.errors.0 }}</div>
                 {% endif %}
+
+
                 
                 <!-- Total Amount Display -->
                 <div class="mt-6 bg-gray-50 rounded-lg p-6 border-2 border-dashed border-gray-300">
@@ -303,16 +305,28 @@ document.addEventListener('DOMContentLoaded', function () {
         const container = document.getElementById(`team-members-container-${optionId}`);
         const teamSizeInfo = document.getElementById(`team-size-info-${optionId}`);
         const currentMemberCount = container.children.length + 1;
+        const isValorantEvent = document.querySelector(`.event-option-checkbox[value="${optionId}"]`).dataset.eventName === 'Valorant';
 
         if (currentMemberCount < maxTeamSize) {
             const newMemberIndex = container.children.length + 1;
             const memberNumber = currentMemberCount + 1;
             const newMemberDiv = document.createElement('div');
             newMemberDiv.className = 'flex items-center space-x-2 mb-2 team-member-row';
+            
+            let valorantFieldsHTML = '';
+            if (isValorantEvent) {
+                valorantFieldsHTML = `
+                    <input type="text" name="team_member_${optionId}_${newMemberIndex}_discord_ign" class="w-full px-3 py-2 border border-gray-300 rounded-lg ml-2" placeholder="Discord IGN" required>
+                    <input type="text" name="team_member_${optionId}_${newMemberIndex}_riot_ign" class="w-full px-3 py-2 border border-gray-300 rounded-lg ml-2" placeholder="Riot IGN" required>
+                    <input type="text" name="team_member_${optionId}_${newMemberIndex}_contact_number" class="w-full px-3 py-2 border border-gray-300 rounded-lg ml-2" placeholder="Contact Number" required>
+                `;
+            }
+
             newMemberDiv.innerHTML = `
                 <div class="flex items-center flex-grow">
                     <input type="radio" name="team_leader_${optionId}" value="${newMemberIndex}" class="h-5 w-5 text-blue-600 border-gray-300 rounded-full focus:ring-blue-500">
-                    <input type="text" name="team_member_${optionId}_${newMemberIndex}" class="w-full px-3 py-2 border border-gray-300 rounded-lg ml-2" placeholder="Team Member ${memberNumber} Name" required>
+                    <input type="text" name="team_member_${optionId}_${newMemberIndex}_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg ml-2" placeholder="Team Member ${memberNumber} Name" required>
+                    ${valorantFieldsHTML}
                 </div>
                 <button type="button" class="remove-team-member text-red-500 hover:text-red-700 font-bold text-xl p-1">&times;</button>
             `;
