@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.conf import settings
 from .models import SecurityAlert
 from .utils import get_client_ip
+from registration.models import PaymentAttempt, SecurityAlert
 
 logger = logging.getLogger(__name__)
 
@@ -120,3 +121,51 @@ class SecurityHeadersMiddleware:
         response['Content-Security-Policy'] = '; '.join(csp_directives)
         
         return response
+    
+class PaymentSecurityMiddleware:
+    """Enhanced security middleware for payment routes"""
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+    
+    def __call__(self, request):
+        # Log payment-related requests
+        if '/payment/' in request.path:
+            logger.info(f"Payment request: {request.path} from {self.get_client_ip(request)}")
+            
+            # Track payment attempts
+            if request.method == 'POST':
+                self.track_payment_attempt(request)
+        
+        response = self.get_response(request)
+        return response
+    
+    def track_payment_attempt(self, request):
+        """Track payment attempts for fraud detection"""
+        ip = self.get_client_ip(request)
+        
+        # Check for suspicious activity
+        recent_attempts = PaymentAttempt.objects.filter(
+            ip_address=ip,
+            attempt_time__gte=timezone.now() - timezone.timedelta(hours=1)
+        ).count()
+        
+        if recent_attempts >= 10:
+            logger.warning(f"⚠️ Suspicious activity: {recent_attempts} payment attempts from {ip}")
+            SecurityAlert.objects.create(
+                alert_type='RATE_LIMIT',
+                description=f'Excessive payment attempts from IP: {ip}',
+                ip_address=ip,
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                data={'attempts': recent_attempts}
+            )
+    
+    @staticmethod
+    def get_client_ip(request):
+        """Get real client IP"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip

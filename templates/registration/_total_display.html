@@ -1,4 +1,37 @@
 <!-- templates/registration/_total_display.html -->
 <div class="text-center">
-    <div class="text-2xl font-bold text-green-600">Registration Fee: ৳500.00</div>
+    {% if is_bundle %}
+        <div class="mb-2">
+            <span class="inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-semibold">
+                <i class="fas fa-gift mr-1"></i>Bundle Package
+            </span>
+        </div>
+        <div class="text-3xl font-bold text-purple-600 mb-1">৳{{ total }}</div>
+        <div class="text-sm text-gray-600">All events included</div>
+    {% else %}
+        {% if subtotal > 0 %}
+            <div class="space-y-2">
+                <div class="flex justify-between items-center max-w-xs mx-auto">
+                    <span class="text-gray-600">Subtotal:</span>
+                    <span class="font-semibold text-gray-900">৳{{ subtotal }}</span>
+                </div>
+                <div class="flex justify-between items-center max-w-xs mx-auto">
+                    <span class="text-gray-600 text-sm">Processing Fee:</span>
+                    <span class="text-sm text-gray-700">৳{{ fee }}</span>
+                </div>
+                <div class="border-t border-gray-300 my-2"></div>
+                <div class="flex justify-between items-center max-w-xs mx-auto">
+                    <span class="font-bold text-gray-900">Total Amount:</span>
+                    <span class="text-3xl font-bold text-green-600">৳{{ total }}</span>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-2xl font-bold text-gray-400">৳0</div>
+            <p class="text-sm text-gray-500 mt-2">Select events to see total</p>
+        {% endif %}
+    {% endif %}
+    
+    {% if error %}
+        <div class="mt-2 text-red-500 text-sm">{{ error }}</div>
+    {% endif %}
 </div>

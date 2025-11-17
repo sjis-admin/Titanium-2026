@@ -1,0 +1,344 @@
+<!-- templates/registration/package_selection.html -->
+{% extends 'base.html' %}
+
+{% block title %}Choose Your Package - TSC 2025{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-gift text-purple-600 mr-3"></i>
+            Choose Your Registration Package
+        </h1>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+            Select between our flexible Regular Package or grab amazing savings with our Discount Bundles!
+        </p>
+    </div>
+
+    <!-- Package Options -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <!-- Regular Package -->
+        <div class="group transform hover:-translate-y-2 transition-all duration-300">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-blue-500 hover:border-blue-600 h-full">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-3xl font-bold flex items-center">
+                            <i class="fas fa-sliders-h mr-3"></i>
+                            Regular Package
+                        </h2>
+                        <span class="bg-white text-blue-600 px-3 py-1 rounded-full text-sm font-bold">
+                            Flexible
+                        </span>
+                    </div>
+                    <p class="text-blue-100">Choose your own events - Perfect for focused participation</p>
+                </div>
+
+                <!-- Content -->
+                <div class="p-8">
+                    <!-- Price -->
+                    <div class="text-center mb-6">
+                        <div class="text-5xl font-bold text-blue-600 mb-2">৳100-600</div>
+                        <div class="text-gray-600">Price depends on event</div>
+                        <div class="text-sm text-gray-500 mt-1">+ Payment processing fee</div>
+                    </div>
+
+                    <!-- Features -->
+                    <div class="space-y-4 mb-8">
+                        <h3 class="font-semibold text-gray-900 text-lg mb-3">What you get:</h3>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                            <p class="text-gray-700">Choose any events that suit your interests</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                            <p class="text-gray-700">Register for individual or team events</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                            <p class="text-gray-700">Participation certificates for all events</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                            <p class="text-gray-700">Access to all carnival facilities</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                            <p class="text-gray-700">Compete for exciting prizes</p>
+                        </div>
+                    </div>
+
+                    <!-- CTA Button -->
+                    <a href="{% url 'register_regular' %}" 
+                       class="block w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-center py-4 rounded-xl font-bold text-lg transition-all transform group-hover:scale-105 shadow-lg">
+                        <i class="fas fa-arrow-right mr-2"></i>
+                        Select Regular Package
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Discount Bundles -->
+        <div class="group transform hover:-translate-y-2 transition-all duration-300">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-purple-500 hover:border-purple-600 h-full relative">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6">
+                    <div class="flex flex-col items-start justify-between mb-2">
+                        <div class="flex items-center justify-between w-full mb-2">
+                            <h2 class="text-3xl font-bold flex items-center">
+                                <i class="fas fa-gift mr-3"></i>
+                                Discount Bundles
+                            </h2>
+                            <span class="bg-white text-purple-600 px-3 py-1 rounded-full text-sm font-bold">
+                                Save Money!
+                            </span>
+                        </div>
+                        <!-- Popular Badge - moved here -->
+                        <span class="bg-yellow-400 text-gray-900 px-4 py-2 rounded-full text-sm font-bold shadow-lg animate-pulse self-end">
+                            <i class="fas fa-star mr-1"></i>Most Popular
+                        </span>
+                    </div>
+                    <p class="text-purple-100">Pre-selected event packages with special pricing</p>
+                </div>
+
+                <!-- Content -->
+                <div class="p-8">
+                    <!-- Price -->
+                    <div class="text-center mb-6">
+                        <div class="text-5xl font-bold text-purple-600 mb-2">৳599</div>
+                        <div class="text-gray-600">All-inclusive bundle price</div>
+                        <div class="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold mt-2">
+                            <i class="fas fa-tag mr-1"></i>Special Offer
+                        </div>
+                    </div>
+
+                    <!-- Features -->
+                    <div class="space-y-4 mb-8">
+                        <h3 class="font-semibold text-gray-900 text-lg mb-3">Bundle benefits:</h3>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                            <p class="text-gray-700">8-9 premium events included</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                            <p class="text-gray-700">Grade-specific event selection</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                            <p class="text-gray-700">Best value for money package</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                            <p class="text-gray-700">All certificates and prizes included</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                            <p class="text-gray-700">Complete carnival experience</p>
+                        </div>
+                    </div>
+
+                    <!-- CTA Button -->
+                    <button onclick="showBundleOptions()" 
+                            class="block w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-center py-4 rounded-xl font-bold text-lg transition-all transform group-hover:scale-105 shadow-lg">
+                        <i class="fas fa-arrow-right mr-2"></i>
+                        View Bundle Options
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bundle Options (Hidden Initially) -->
+    <div id="bundle-options" class="hidden animate-fadeIn">
+        <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8 border-2 border-purple-200">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">
+                <i class="fas fa-star text-yellow-500 mr-2"></i>
+                Choose Your Bundle Package
+            </h2>
+
+            <!-- Junior Bundle -->
+            {% if junior_bundles %}
+            <div class="mb-8">
+                <h3 class="text-2xl font-bold text-purple-700 mb-4 flex items-center">
+                    <i class="fas fa-child mr-2"></i>
+                    Junior Packages (Grade 3-6)
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for bundle in junior_bundles %}
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-purple-300 hover:border-purple-500 transition-all transform hover:-translate-y-1">
+                        <!-- Bundle Header -->
+                        <div class="bg-gradient-to-r from-blue-400 to-purple-400 text-white p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-xl font-bold">{{ bundle.name }}</h4>
+                                <span class="bg-white bg-opacity-20 backdrop-blur-sm rounded-full px-3 py-1">
+                                    <i class="{{ bundle.icon }} mr-1"></i>
+                                </span>
+                            </div>
+                            <p class="text-blue-100 text-sm">{{ bundle.description }}</p>
+                        </div>
+
+                        <!-- Bundle Content -->
+                        <div class="p-6">
+                            <!-- Price -->
+                            <div class="text-center mb-4 pb-4 border-b border-gray-200">
+                                <div class="text-4xl font-bold text-{{ bundle.badge_color }}-600">৳{{ bundle.price }}</div>
+                                <div class="text-sm text-gray-600 mt-1">{{ bundle.get_events.count }} events included</div>
+                            </div>
+
+                            <!-- Event List -->
+                            <div class="space-y-2 mb-6">
+                                <h5 class="font-semibold text-gray-900 mb-3">Included Events:</h5>
+                                {% for bundle_event in bundle.get_events %}
+                                <div class="flex items-center text-sm">
+                                    <i class="fas fa-check-circle text-green-500 mr-2 flex-shrink-0"></i>
+                                    <span class="text-gray-700">{{ bundle_event.event_option.event.name }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Select Button -->
+                            <a href="{% url 'register_bundle' bundle.id %}" 
+                               class="block w-full bg-{{ bundle.badge_color }}-500 hover:bg-{{ bundle.badge_color }}-600 text-white text-center py-3 rounded-lg font-bold transition-all">
+                                <i class="fas fa-shopping-cart mr-2"></i>
+                                Select This Bundle
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Senior Bundle -->
+            {% if senior_bundles %}
+            <div>
+                <h3 class="text-2xl font-bold text-purple-700 mb-4 flex items-center">
+                    <i class="fas fa-user-graduate mr-2"></i>
+                    Senior Packages (Grade 7-12)
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for bundle in senior_bundles %}
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-purple-300 hover:border-purple-500 transition-all transform hover:-translate-y-1">
+                        <!-- Bundle Header -->
+                        <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-xl font-bold">{{ bundle.name }}</h4>
+                                <span class="bg-white bg-opacity-20 backdrop-blur-sm rounded-full px-3 py-1">
+                                    <i class="{{ bundle.icon }} mr-1"></i>
+                                </span>
+                            </div>
+                            <p class="text-purple-100 text-sm">{{ bundle.description }}</p>
+                        </div>
+
+                        <!-- Bundle Content -->
+                        <div class="p-6">
+                            <!-- Price -->
+                            <div class="text-center mb-4 pb-4 border-b border-gray-200">
+                                <div class="text-4xl font-bold text-{{ bundle.badge_color }}-600">৳{{ bundle.price }}</div>
+                                <div class="text-sm text-gray-600 mt-1">{{ bundle.get_events.count }} events included</div>
+                            </div>
+
+                            <!-- Event List -->
+                            <div class="space-y-2 mb-6">
+                                <h5 class="font-semibold text-gray-900 mb-3">Included Events:</h5>
+                                {% for bundle_event in bundle.get_events %}
+                                <div class="flex items-center text-sm">
+                                    <i class="fas fa-check-circle text-green-500 mr-2 flex-shrink-0"></i>
+                                    <span class="text-gray-700">{{ bundle_event.event_option.event.name }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Select Button -->
+                            <a href="{% url 'register_bundle' bundle.id %}" 
+                               class="block w-full bg-{{ bundle.badge_color }}-500 hover:bg-{{ bundle.badge_color }}-600 text-white text-center py-3 rounded-lg font-bold transition-all">
+                                <i class="fas fa-shopping-cart mr-2"></i>
+                                Select This Bundle
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if not has_bundles %}
+            <div class="text-center py-12">
+                <i class="fas fa-gift text-gray-300 text-6xl mb-4"></i>
+                <p class="text-xl text-gray-600">Bundle packages will be available soon!</p>
+                <p class="text-gray-500 mt-2">Check back later or proceed with the Regular Package</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Comparison Section -->
+    <div class="mt-12 bg-white rounded-2xl shadow-lg p-8">
+        <h2 class="text-3xl font-bold text-center text-gray-900 mb-8">
+            Package Comparison
+        </h2>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b-2 border-gray-200">
+                        <th class="text-left py-4 px-4 font-semibold text-gray-700">Features</th>
+                        <th class="text-center py-4 px-4 font-semibold text-blue-600">Regular Package</th>
+                        <th class="text-center py-4 px-4 font-semibold text-purple-600">Discount Bundle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-4 px-4 text-gray-700">Number of Events</td>
+                        <td class="text-center py-4 px-4">Your choice</td>
+                        <td class="text-center py-4 px-4 font-bold">8-9 events</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-4 px-4 text-gray-700">Price</td>
+                        <td class="text-center py-4 px-4 text-blue-600 font-bold">৳100-600</td>
+                        <td class="text-center py-4 px-4 text-purple-600 font-bold">৳599</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-4 px-4 text-gray-700">Event Selection</td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-check-circle text-green-500"></i> Flexible</td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-star text-yellow-500"></i> Pre-selected</td>
+                    </tr>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-4 px-4 text-gray-700">Certificates</td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-check-circle text-green-500"></i></td>
+                        <td class="text-center py-4 px-4"><i class="fas fa-check-circle text-green-500"></i></td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 px-4 text-gray-700">Best Value</td>
+                        <td class="text-center py-4 px-4">Good for focused participation</td>
+                        <td class="text-center py-4 px-4 text-purple-600 font-bold">
+                            <i class="fas fa-trophy mr-1"></i>Maximum savings!
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function showBundleOptions() {
+    const bundleOptions = document.getElementById('bundle-options');
+    bundleOptions.classList.remove('hidden');
+    bundleOptions.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Add fade-in animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.5s ease-out;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

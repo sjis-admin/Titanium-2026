@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sjis_math_club.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'titanium_science_club.settings')
 
 application = get_asgi_application()

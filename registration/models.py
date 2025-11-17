@@ -101,6 +101,15 @@ class Student(models.Model):
         ('C', 'Group C (Grade 7-8)'),
         ('D', 'Group D (Grade 9-12)'),
     ]
+
+    selected_bundle = models.ForeignKey(
+        'DiscountBundle',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='students',
+        help_text="Discount bundle selected by student (if any)"
+    )
     
     # Basic Information
     name = models.CharField(max_length=200)
@@ -169,7 +178,7 @@ class Student(models.Model):
 
         if not self.registration_id:
             current_year = timezone.now().strftime('%y')
-            prefix = f'JMC{current_year}'
+            prefix = f'TSC{current_year}'
             last_student = Student.objects.filter(registration_id__startswith=prefix).order_by('registration_id').last()
             
             if last_student:
@@ -500,13 +509,30 @@ class Receipt(models.Model):
     def save(self, *args, **kwargs):
         if not self.receipt_number:
             with transaction.atomic():
+                current_year = timezone.now().year
+                prefix = f"TSC{current_year}"  # Changed to TSC with full year
+                
                 # Lock the table to prevent race conditions
-                last_receipt = Receipt.objects.select_for_update().order_by('id').last()
+                last_receipt = Receipt.objects.select_for_update().filter(
+                    receipt_number__startswith=prefix
+                ).order_by('receipt_number').last()
+                
                 if last_receipt:
-                    last_number = int(last_receipt.receipt_number.split('-')[1])
-                    self.receipt_number = f"JMT2025-{last_number + 1:04d}"
+                    try:
+                        # Extract the numeric part (e.g., "TSC2025-0001" → 1)
+                        parts = last_receipt.receipt_number.split('-')
+                        if len(parts) == 2:
+                            last_number = int(parts[1])
+                            new_number = last_number + 1
+                        else:
+                            new_number = 1
+                    except (ValueError, IndexError):
+                        new_number = 1
                 else:
-                    self.receipt_number = "JMT2025-0001"
+                    new_number = 1
+                
+                self.receipt_number = f"{prefix}-{new_number:04d}"
+        
         super().save(*args, **kwargs)
     
     def record_download(self):
@@ -635,3 +661,97 @@ class ValorantApplicationSettings(models.Model):
 
     def __str__(self):
         return "Valorant Application Settings"
+
+
+
+class DiscountBundle(models.Model):
+    """Discount bundle packages for different grade groups"""
+    BUNDLE_TYPE_CHOICES = [
+        ('JUNIOR', 'Titanium Junior Innovators Pack (Grade 3-6)'),
+        ('SENIOR', 'Titanium Senior Visionaries Pack (Grade 7-12)'),
+    ]
+    
+    name = models.CharField(max_length=200)
+    bundle_type = models.CharField(max_length=10, choices=BUNDLE_TYPE_CHOICES)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    
+    # Grade range for this bundle
+    min_grade = models.ForeignKey(
+        Grade, 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name='bundles_min',
+        help_text="Minimum grade for this bundle"
+    )
+    max_grade = models.ForeignKey(
+        Grade, 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name='bundles_max',
+        help_text="Maximum grade for this bundle"
+    )
+    
+    # Visual elements
+    badge_color = models.CharField(
+        max_length=50,
+        default='blue',
+        help_text="Tailwind color class (e.g., 'blue', 'purple', 'green')"
+    )
+    icon = models.CharField(
+        max_length=50,
+        default='fa-star',
+        help_text="FontAwesome icon class (e.g., 'fa-star', 'fa-rocket')"
+    )
+    
+    is_active = models.BooleanField(default=True)
+    display_order = models.PositiveIntegerField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['display_order', 'bundle_type']
+        verbose_name = 'Discount Bundle'
+        verbose_name_plural = 'Discount Bundles'
+    
+    def __str__(self):
+        return f"{self.name} - ৳{self.price}"
+    
+    def get_events(self):
+        """Get all events in this bundle"""
+        return self.bundle_events.select_related('event_option__event').all()
+    
+    def is_available_for_grade(self, grade):
+        """Check if bundle is available for given grade"""
+        if not self.min_grade or not self.max_grade:
+            return False
+        return self.min_grade.order <= grade.order <= self.max_grade.order
+
+
+class BundleEvent(models.Model):
+    """Events included in a discount bundle"""
+    bundle = models.ForeignKey(
+        DiscountBundle, 
+        on_delete=models.CASCADE,
+        related_name='bundle_events'
+    )
+    event_option = models.ForeignKey(
+        EventOption, 
+        on_delete=models.CASCADE,
+        related_name='bundle_inclusions'
+    )
+    display_order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['display_order']
+        unique_together = ['bundle', 'event_option']
+        verbose_name = 'Bundle Event'
+        verbose_name_plural = 'Bundle Events'
+    
+    def __str__(self):
+        return f"{self.bundle.name} - {self.event_option.event.name}"

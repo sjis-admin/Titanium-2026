@@ -1,26 +1,106 @@
-<!-- templates/registration/register.html - PROFESSIONAL VERSION -->
+<!-- templates/registration/register.html - ADD AT THE TOP -->
 {% extends 'base.html' %}
 
-{% block title %}Register - SJIS Math Club 2025{% endblock %}
+{% block title %}
+{% if is_bundle_registration %}
+Register - {{ selected_bundle.name }}
+{% else %}
+Register - Regular Package
+{% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Header -->
+    <!-- Package Info Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'package_selection' %}" 
+                   class="text-gray-600 hover:text-gray-900 transition-colors">
+                    <i class="fas fa-arrow-left text-2xl"></i>
+                </a>
+                <div>
+                    <div class="text-sm text-gray-600">Selected Package:</div>
+                    <div class="text-2xl font-bold text-gray-900">
+                        {% if is_bundle_registration %}
+                            <i class="fas fa-gift text-purple-600 mr-2"></i>
+                            {{ selected_bundle.name }}
+                        {% else %}
+                            <i class="fas fa-sliders-h text-blue-600 mr-2"></i>
+                            Regular Package
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-sm text-gray-600">Total Amount:</div>
+                <div class="text-3xl font-bold text-green-600">
+                    {% if is_bundle_registration %}
+                        ৳{{ selected_bundle.price }}
+                    {% else %}
+                        ৳500
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bundle Events Preview (if bundle selected) -->
+    {% if is_bundle_registration and selected_bundle %}
+    <div class="mb-8 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200">
+        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-list-check text-purple-600 mr-2"></i>
+            Events Included in Your Bundle
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {% for bundle_event in selected_bundle.bundle_events.all %}
+            <div class="bg-white rounded-lg p-3 shadow-sm flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                <div class="flex-grow">
+                    <div class="font-medium text-gray-900 text-sm">{{ bundle_event.event_option.event.name }}</div>
+                    <div class="text-xs text-gray-600">{{ bundle_event.event_option.name }}</div>
+                </div>
+                {% if bundle_event.event_option.event_type == 'TEAM' %}
+                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full ml-2">Team</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="mt-4 bg-yellow-100 border border-yellow-300 rounded-lg p-3">
+            <div class="flex items-start">
+                <i class="fas fa-info-circle text-yellow-600 mt-1 mr-2"></i>
+                <p class="text-sm text-yellow-800">
+                    <strong>Note:</strong> All events listed above are automatically included. You'll provide team details for team events in the form below.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Registration Form Header -->
     <div class="text-center mb-8">
         <h1 class="text-4xl font-bold text-gray-800 mb-4">
             <i class="fas fa-user-plus text-primary mr-2"></i>
-            Register for Math Festival 2025
+            Complete Your Registration
         </h1>
-        <p class="text-gray-600 text-lg">Join the ultimate math competition and showcase your skills!</p>
+        <p class="text-gray-600 text-lg">Fill in your details to proceed with payment</p>
     </div>
 
     <!-- Registration Form -->
     <div class="bg-white rounded-2xl shadow-xl p-8">
-        <form method="post" class="space-y-6" id="registration-form" action="{% url 'register' %}">
+        <form method="post" class="space-y-6" id="registration-form" 
+              action="{% if is_bundle_registration %}{% url 'register_bundle' selected_bundle.id %}{% else %}{% url 'register_regular' %}{% endif %}">
             {% csrf_token %}
             
-            <!-- Hidden field for selected events -->
-            <input type="hidden" name="selected_events" id="id_selected_events" value="">
+            <!-- Hidden fields -->
+            <input type="hidden" name="selected_events" id="id_selected_events" 
+                   value="{% if is_bundle_registration %}{% for be in selected_bundle.bundle_events.all %}{{ be.event_option.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}">
+            {% if is_bundle_registration %}
+            <input type="hidden" name="bundle_id" value="{{ selected_bundle.id }}">
+            <input type="hidden" name="package_type" value="bundle">
+            {% else %}
+            <input type="hidden" name="package_type" value="regular">
+            {% endif %}
             
             <!-- Personal Information -->
             <div class="border-b border-gray-200 pb-6">
@@ -99,6 +179,11 @@
                         {% if form.grade.errors %}
                             <div class="text-red-500 text-sm mt-1">{{ form.grade.errors.0 }}</div>
                         {% endif %}
+                        {% if is_bundle_registration %}
+                        <p class="text-xs text-gray-500 mt-1">
+                            This bundle is for {{ selected_bundle.min_grade.name }} - {{ selected_bundle.max_grade.name }}
+                        </p>
+                        {% endif %}
                     </div>
                     
                     <div>
@@ -142,9 +227,7 @@
                             Reference
                         </label>
                         {{ form.reference }}
-                        <p class="mt-1 text-xs text-gray-500">
-                            Your Campus Ambassador's name
-                        </p>
+                        <p class="mt-1 text-xs text-gray-500">Your Campus Ambassador's name</p>
                         {% if form.reference.errors %}
                             <p class="mt-1 text-sm text-red-600">{{ form.reference.errors.0 }}</p>
                         {% endif %}
@@ -152,21 +235,8 @@
                 </div>
             </div>
 
-            <!-- Campus Ambassador Notice -->
-            <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 rounded-r-lg mb-6">
-                <div class="flex">
-                    <div class="py-1"><i class="fas fa-bullhorn fa-2x mr-4"></i></div>
-                    <div>
-                        <p class="font-bold">Are you a Campus Ambassador?</p>
-                        <p class="text-sm">If you are, kindly complete the form by clicking the "Fill CA Form" button below.</p>
-                        <a href="#" target="_blank" class="mt-2 inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-colors">
-                            Fill CA Form
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Event Selection -->
+            <!-- Event Selection (Only for Regular Package) -->
+            {% if not is_bundle_registration %}
             <div class="pb-6">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
                     <i class="fas fa-calendar-check text-purple-500 mr-2"></i>
@@ -191,18 +261,69 @@
                 {% if form.selected_events.errors %}
                     <div class="text-red-500 text-sm mt-2">{{ form.selected_events.errors.0 }}</div>
                 {% endif %}
-
-
+            </div>
+            {% else %}
+            <!-- Team Details for Bundle Events -->
+            <div class="pb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-users text-purple-500 mr-2"></i>
+                    Team Event Details
+                </h2>
                 
-                <!-- Total Amount Display -->
-                <div class="mt-6 bg-gray-50 rounded-lg p-6 border-2 border-dashed border-gray-300">
-                    <div class="text-center">
-                        <h3 class="text-lg font-medium text-gray-700 mb-2">Total Amount to Pay</h3>
-                        <div id="total-amount">
-                            <div class="text-gray-500">৳0</div>
+                {% for bundle_event in selected_bundle.bundle_events.all %}
+                    {% if bundle_event.event_option.event_type == 'TEAM' %}
+                    <div class="mb-6 bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">
+                            {{ bundle_event.event_option.event.name }} - {{ bundle_event.event_option.name }}
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Team Name <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" 
+                                       name="team_name_{{ bundle_event.event_option.id }}" 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Enter your team name"
+                                       required>
+                            </div>
+                            
+                            <div id="team-members-container-{{ bundle_event.event_option.id }}" class="space-y-2">
+                                <!-- Team members will be added here -->
+                            </div>
+                            
+                            <button type="button" 
+                                    class="add-team-member bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                                    data-option-id="{{ bundle_event.event_option.id }}"
+                                    data-max-team-size="{{ bundle_event.event_option.max_team_size }}"
+                                    data-event-name="{{ bundle_event.event_option.event.name }}">
+                                <i class="fas fa-plus mr-2"></i>Add Team Member
+                            </button>
+                            
+                            <p class="text-sm text-gray-600">
+                                Maximum team size: {{ bundle_event.event_option.max_team_size }} members
+                            </p>
                         </div>
-                        <p class="text-sm text-gray-500 mt-2">Select events to see total amount</p>
                     </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Total Amount Display -->
+            <div class="mt-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border-2 border-green-300">
+                <div class="text-center">
+                    <h3 class="text-lg font-medium text-gray-700 mb-2">Total Amount to Pay</h3>
+                    {% if is_bundle_registration %}
+                    <div class="text-4xl font-bold text-green-600">৳{{ selected_bundle.price }}</div>
+                    <p class="text-sm text-gray-600 mt-2">Bundle Package - All {{ selected_bundle.bundle_events.count }} events included</p>
+                    {% else %}
+                    <div id="total-amount">
+                        <div class="text-4xl font-bold text-green-600">৳500</div>
+                        <p class="text-sm text-gray-600 mt-2">Select events to confirm amount</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -255,9 +376,26 @@ document.addEventListener('DOMContentLoaded', function () {
     const eventList = document.getElementById('event-list');
     let isSubmitting = false;
 
+    {% if is_bundle_registration %}
+    // AUTO-POPULATE BUNDLE EVENTS IMMEDIATELY
+    const bundleEvents = [
+        {% for be in selected_bundle.bundle_events.all %}{{ be.event_option.id }}{% if not forloop.last %},{% endif %}{% endfor %}
+    ];
+    
+    console.log('Bundle Events:', bundleEvents);
+    
+    // Set the hidden field value
+    const hiddenInput = document.getElementById('id_selected_events');
+    if (hiddenInput) {
+        hiddenInput.value = bundleEvents.join(',');
+        console.log('Hidden input value set to:', hiddenInput.value);
+    } else {
+        console.error('Hidden input not found!');
+    }
+    {% endif %}
+
     // Update selected events hidden input
     function updateSelectedEvents() {
-        const checkboxes = form.querySelectorAll('.event-option-checkbox:checked');
         const hiddenInput = document.getElementById('id_selected_events');
         
         if (!hiddenInput) {
@@ -265,15 +403,25 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
+        {% if is_bundle_registration %}
+        // For bundle: events are already set
+        const currentValue = hiddenInput.value;
+        console.log('Bundle - Current hidden input value:', currentValue);
+        return currentValue && currentValue.length > 0;
+        {% else %}
+        // For regular: get from CHECKED checkboxes only
+        const checkboxes = form.querySelectorAll('.event-option-checkbox:checked');
         const selectedIds = Array.from(checkboxes).map(cb => cb.value).filter(id => id);
         hiddenInput.value = selectedIds.join(',');
         
-        console.log('Selected event IDs:', selectedIds);
+        console.log('Regular - Selected event IDs:', selectedIds);
         return selectedIds.length > 0;
+        {% endif %}
     }
 
     // Update total amount
     function updateTotal() {
+        {% if not is_bundle_registration %}
         if (typeof htmx !== 'undefined') {
             htmx.ajax('POST', '{% url "calculate_total" %}', {
                 target: '#total-amount',
@@ -281,6 +429,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 source: form
             });
         }
+        {% endif %}
     }
 
     // Show/hide team section
@@ -295,6 +444,24 @@ document.addEventListener('DOMContentLoaded', function () {
         const teamDetailsDiv = document.getElementById(`team-details-${optionId}`);
         if (teamDetailsDiv) {
             teamDetailsDiv.classList.add('hidden');
+            
+            // Clear team data when hiding
+            const teamNameInput = form.querySelector(`input[name="team_name_${optionId}"]`);
+            if (teamNameInput) teamNameInput.value = '';
+            
+            // Clear all team member inputs
+            const memberInputs = form.querySelectorAll(`input[name^="team_member_${optionId}_"]`);
+            memberInputs.forEach(input => input.value = '');
+            
+            // Clear team leader selection
+            const leaderRadios = form.querySelectorAll(`input[name="team_leader_${optionId}"]`);
+            leaderRadios.forEach(radio => {
+                if (radio.value === '0') {
+                    radio.checked = true; // Reset to first member as leader
+                } else {
+                    radio.checked = false;
+                }
+            });
         }
     }
 
@@ -302,41 +469,51 @@ document.addEventListener('DOMContentLoaded', function () {
     function addTeamMember(addButton) {
         const optionId = addButton.dataset.optionId;
         const maxTeamSize = parseInt(addButton.dataset.maxTeamSize, 10);
+        const eventName = addButton.dataset.eventName || '';
         const container = document.getElementById(`team-members-container-${optionId}`);
-        const teamSizeInfo = document.getElementById(`team-size-info-${optionId}`);
-        const currentMemberCount = container.children.length + 1;
-        const isValorantEvent = document.querySelector(`.event-option-checkbox[value="${optionId}"]`).dataset.eventName === 'Valorant';
+        const currentMemberCount = container ? container.children.length + 1 : 1;
+        const isValorantEvent = eventName.toLowerCase().includes('valorant');
 
         if (currentMemberCount < maxTeamSize) {
             const newMemberIndex = container.children.length + 1;
             const memberNumber = currentMemberCount + 1;
             const newMemberDiv = document.createElement('div');
-            newMemberDiv.className = 'flex items-center space-x-2 mb-2 team-member-row';
+            newMemberDiv.className = 'flex items-center space-x-2 mb-2 team-member-row bg-gray-50 p-3 rounded-lg';
             
             let valorantFieldsHTML = '';
             if (isValorantEvent) {
                 valorantFieldsHTML = `
-                    <input type="text" name="team_member_${optionId}_${newMemberIndex}_discord_ign" class="w-full px-3 py-2 border border-gray-300 rounded-lg ml-2" placeholder="Discord IGN" required>
-                    <input type="text" name="team_member_${optionId}_${newMemberIndex}_riot_ign" class="w-full px-3 py-2 border border-gray-300 rounded-lg ml-2" placeholder="Riot IGN" required>
-                    <input type="text" name="team_member_${optionId}_${newMemberIndex}_contact_number" class="w-full px-3 py-2 border border-gray-300 rounded-lg ml-2" placeholder="Contact Number" required>
+                    <input type="text" name="team_member_${optionId}_${newMemberIndex}_discord_ign" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg" 
+                           placeholder="Discord IGN" required>
+                    <input type="text" name="team_member_${optionId}_${newMemberIndex}_riot_ign" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg" 
+                           placeholder="Riot IGN" required>
+                    <input type="text" name="team_member_${optionId}_${newMemberIndex}_contact_number" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg" 
+                           placeholder="Contact Number" required>
                 `;
             }
 
             newMemberDiv.innerHTML = `
-                <div class="flex items-center flex-grow">
-                    <input type="radio" name="team_leader_${optionId}" value="${newMemberIndex}" class="h-5 w-5 text-blue-600 border-gray-300 rounded-full focus:ring-blue-500">
-                    <input type="text" name="team_member_${optionId}_${newMemberIndex}_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg ml-2" placeholder="Team Member ${memberNumber} Name" required>
+                <div class="flex items-center flex-grow space-x-2">
+                    <input type="radio" name="team_leader_${optionId}" value="${newMemberIndex}" 
+                           class="h-5 w-5 text-blue-600 border-gray-300 rounded-full focus:ring-blue-500">
+                    <input type="text" name="team_member_${optionId}_${newMemberIndex}_name" 
+                           class="flex-grow px-3 py-2 border border-gray-300 rounded-lg" 
+                           placeholder="Member ${memberNumber} Name" required>
                     ${valorantFieldsHTML}
                 </div>
-                <button type="button" class="remove-team-member text-red-500 hover:text-red-700 font-bold text-xl p-1">&times;</button>
+                <button type="button" class="remove-team-member text-red-500 hover:text-red-700 font-bold text-xl p-2">
+                    <i class="fas fa-times-circle"></i>
+                </button>
             `;
             container.appendChild(newMemberDiv);
             
             const remaining = maxTeamSize - (currentMemberCount + 1);
-            teamSizeInfo.textContent = remaining > 0 ? `You can add ${remaining} more member(s).` : 'Maximum team size reached.';
-            
             if (remaining <= 0) {
                 addButton.disabled = true;
+                addButton.classList.add('opacity-50', 'cursor-not-allowed');
             }
         }
     }
@@ -347,40 +524,74 @@ document.addEventListener('DOMContentLoaded', function () {
         const container = memberRow.parentElement;
         const optionId = container.id.split('-')[3];
         const addButton = document.querySelector(`.add-team-member[data-option-id='${optionId}']`);
-        const maxTeamSize = parseInt(addButton.dataset.maxTeamSize, 10);
-        const teamSizeInfo = document.getElementById(`team-size-info-${optionId}`);
         
         memberRow.remove();
         
-        const memberRows = container.querySelectorAll('.team-member-row');
-        memberRows.forEach((row, index) => {
-            const newMemberIndex = index + 1;
-            const memberNumber = newMemberIndex + 1;
-            row.querySelector('input[type="text"]').name = `team_member_${optionId}_${newMemberIndex}`;
-            row.querySelector('input[type="text"]').placeholder = `Team Member ${memberNumber} Name`;
-            row.querySelector('input[type="radio"]').value = `${newMemberIndex}`;
-        });
-        
-        const currentMemberCount = container.children.length + 1;
-        const remaining = maxTeamSize - currentMemberCount;
-        teamSizeInfo.textContent = `You can add ${remaining} more member(s).`;
-        addButton.disabled = false;
+        if (addButton) {
+            addButton.disabled = false;
+            addButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
     }
 
-    // Validate team events
+    // ✅ FIXED: Validate team events - ONLY for CHECKED events
     function validateTeamEvents() {
-        const teamCheckboxes = form.querySelectorAll('.event-option-checkbox:checked[data-option-type="TEAM"]');
+        {% if is_bundle_registration %}
+        // For bundle: validate all team events in the bundle
+        const teamEventIds = [
+            {% for be in selected_bundle.bundle_events.all %}
+                {% if be.event_option.event_type == 'TEAM' %}
+                    {{ be.event_option.id }},
+                {% endif %}
+            {% endfor %}
+        ];
         
-        for (const checkbox of teamCheckboxes) {
+        for (const optionId of teamEventIds) {
+            const teamNameInput = form.querySelector(`input[name="team_name_${optionId}"]`);
+            if (!teamNameInput || !teamNameInput.value.trim()) {
+                const eventName = teamNameInput ? 
+                    teamNameInput.closest('.bg-gray-50')?.querySelector('h3')?.textContent || 'this event' : 
+                    'this team event';
+                return {
+                    valid: false,
+                    message: `Please enter a team name for ${eventName}`
+                };
+            }
+            
+            const leaderRadios = form.querySelectorAll(`input[name="team_leader_${optionId}"]`);
+            const hasLeader = Array.from(leaderRadios).some(radio => radio.checked);
+            
+            if (!hasLeader) {
+                return {
+                    valid: false,
+                    message: `Please select a team leader for the team event`
+                };
+            }
+        }
+        {% else %}
+        // ✅ FIXED: For regular - ONLY validate CHECKED team events
+        const checkedTeamCheckboxes = form.querySelectorAll('.event-option-checkbox:checked[data-option-type="TEAM"]');
+        
+        console.log('Validating team events. Found checked team events:', checkedTeamCheckboxes.length);
+        
+        for (const checkbox of checkedTeamCheckboxes) {
             const optionId = checkbox.value;
             const eventSection = checkbox.closest('.event-section');
-            if (!eventSection) continue;
+            const eventName = eventSection ? 
+                eventSection.querySelector('h3')?.textContent.trim() || 'this event' : 
+                'this event';
             
-            const eventNameEl = eventSection.querySelector('h3');
-            const eventName = eventNameEl ? eventNameEl.textContent.trim() : 'this event';
+            console.log(`Validating team event: ${eventName} (ID: ${optionId})`);
+            
+            // Check if team section is visible
+            const teamDetailsDiv = document.getElementById(`team-details-${optionId}`);
+            if (!teamDetailsDiv || teamDetailsDiv.classList.contains('hidden')) {
+                console.log(`Team section for ${eventName} is hidden, skipping validation`);
+                continue; // Skip if team section is not visible
+            }
             
             const teamNameInput = form.querySelector(`input[name="team_name_${optionId}"]`);
             if (!teamNameInput || !teamNameInput.value.trim()) {
+                console.error(`Team name missing for ${eventName}`);
                 return {
                     valid: false,
                     message: `Please enter a team name for "${eventName}"`
@@ -391,12 +602,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const hasLeader = Array.from(leaderRadios).some(radio => radio.checked);
             
             if (!hasLeader) {
+                console.error(`Team leader not selected for ${eventName}`);
                 return {
                     valid: false,
                     message: `Please select a team leader for "${eventName}"`
                 };
             }
+            
+            console.log(`✓ Team validation passed for ${eventName}`);
         }
+        {% endif %}
         
         return { valid: true };
     }
@@ -440,7 +655,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 4000);
     }
 
-    // Event list changes
+    // Event list changes (only for regular package)
+    {% if not is_bundle_registration %}
     if (eventList) {
         eventList.addEventListener('change', function(e) {
             if (e.target.matches('.event-option-checkbox')) {
@@ -449,6 +665,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const optionType = checkbox.dataset.optionType;
 
                 if (checkbox.checked) {
+                    // Uncheck other options for the same event
                     eventList.querySelectorAll(`.event-option-checkbox[data-event-id="${eventId}"]`).forEach(cb => {
                         if (cb !== checkbox) {
                             if (cb.checked && cb.dataset.optionType === 'TEAM') {
@@ -459,6 +676,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 }
 
+                // Show/hide team section based on checkbox state
                 if (optionType === 'TEAM') {
                     if (checkbox.checked) {
                         showTeamSection(checkbox.value);
@@ -473,13 +691,27 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         eventList.addEventListener('click', function(e) {
-            if (e.target.matches('.add-team-member')) {
-                addTeamMember(e.target);
-            } else if (e.target.matches('.remove-team-member')) {
-                removeTeamMember(e.target);
+            if (e.target.matches('.add-team-member') || e.target.closest('.add-team-member')) {
+                const button = e.target.matches('.add-team-member') ? e.target : e.target.closest('.add-team-member');
+                addTeamMember(button);
+            } else if (e.target.matches('.remove-team-member') || e.target.closest('.remove-team-member')) {
+                const button = e.target.matches('.remove-team-member') ? e.target : e.target.closest('.remove-team-member');
+                removeTeamMember(button);
             }
         });
     }
+    {% else %}
+    // For bundle: handle team member add/remove
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.add-team-member') || e.target.closest('.add-team-member')) {
+            const button = e.target.matches('.add-team-member') ? e.target : e.target.closest('.add-team-member');
+            addTeamMember(button);
+        } else if (e.target.matches('.remove-team-member') || e.target.closest('.remove-team-member')) {
+            const button = e.target.matches('.remove-team-member') ? e.target : e.target.closest('.remove-team-member');
+            removeTeamMember(button);
+        }
+    });
+    {% endif %}
 
     // Form submission with enhanced validation
     if (form) {
@@ -493,12 +725,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             console.log('=== FORM VALIDATION STARTED ===');
+            console.log('Package type: {% if is_bundle_registration %}BUNDLE{% else %}REGULAR{% endif %}');
 
             // Disable submit button immediately
             submitButton.disabled = true;
             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Validating...';
 
-            // Step 1: Update selected events
+            // Step 1: Update/check selected events
             const hasEvents = updateSelectedEvents();
             
             if (!hasEvents) {
@@ -510,7 +743,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             console.log('✓ Events selected: PASSED');
 
-            // Step 2: Validate team events
+            // Step 2: Validate team events (ONLY for checked events)
             const teamValidation = validateTeamEvents();
             if (!teamValidation.valid) {
                 console.error('Team validation failed:', teamValidation.message);
@@ -601,6 +834,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initializeSchoolLogic();
 
     console.log('✅ Registration form initialized successfully');
+    console.log('Bundle registration:', {% if is_bundle_registration %}true{% else %}false{% endif %});
 });
 
 // CSS animations

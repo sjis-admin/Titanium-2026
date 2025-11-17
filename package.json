@@ -1,7 +1,7 @@
 {
   "name": "sjis_math_club",
   "version": "1.0.0",
-  "description": "A comprehensive Django web application for managing student registrations for the SJIS Math Club 2025. Features include online registration, SSL Commerz payment integration, automated email confirmations, and a powerful admin dashboard.",
+  "description": "A comprehensive Django web application for managing student registrations for the Titanium Science Club 2025. Features include online registration, SSL Commerz payment integration, automated email confirmations, and a powerful admin dashboard.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

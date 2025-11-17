@@ -345,7 +345,7 @@ def generate_secure_transaction_id():
     # Use UUID4 for randomness and current timestamp for uniqueness
     timestamp = str(int(timezone.now().timestamp()))
     random_part = str(uuid.uuid4()).replace('-', '')[:8].upper()
-    return f"JMT2025-{timestamp[-6:]}{random_part}"
+    return f"TSC2025-{timestamp[-6:]}{random_part}"
 
 class EmailThread(Thread):
     def __init__(self, subject, message, from_email, recipient_list, html_message):

@@ -1,7 +1,7 @@
 # README.md
-# SJIS Math Club Registration System
+# Titanium Science Club Registration System
 
-A comprehensive Django web application for managing student registrations for the SJIS Math Club 2025. Features include online registration, SSL Commerz payment integration, automated email confirmations, and a powerful admin dashboard.
+A comprehensive Django web application for managing student registrations for the Titanium Science Club 2025. Features include online registration, SSL Commerz payment integration, automated email confirmations, and a powerful admin dashboard.
 
 ## Features
 

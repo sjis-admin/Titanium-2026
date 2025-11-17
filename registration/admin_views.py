@@ -14,14 +14,17 @@ from datetime import datetime, timedelta
 from xhtml2pdf import pisa
 from django.contrib.auth import logout
 from io import BytesIO
-from .views import send_registration_email
+
 from .forms import BulkSchoolForm
 import csv
 
 @staff_member_required
 def export_valorant_applications(request):
-    response = HttpResponse(content_type='text/csv')
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="valorant_applications.csv"'
+    
+    # Add BOM for Excel compatibility
+    response.write('\ufeff')
 
     writer = csv.writer(response)
     writer.writerow(['Team Name', 'Member Name', 'Discord IGN', 'Riot IGN', 'Contact Number'])
@@ -49,7 +52,7 @@ def print_detailed_report_pdf(request):
     }
     # Create a Django response object, and specify content_type as pdf
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="JMT_Detailed_Registration_Report_{}.pdf"'.format(timezone.now().strftime('%Y-%m-%d'))
+    response['Content-Disposition'] = 'attachment; filename="TSC_Detailed_Registration_Report_{}.pdf"'.format(timezone.now().strftime('%Y-%m-%d'))
     # find the template and render it.
     template = get_template(template_path)
     html = template.render(context)
@@ -76,9 +79,12 @@ def export_detailed_report(request):
         # Generate the CSV content
         csv_content = export_comprehensive_report_csv()
         
+        # Add BOM for Excel compatibility
+        csv_content_with_bom = '\ufeff' + csv_content
+
         # Create response
-        response = HttpResponse(csv_content, content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="JMT2025_Comprehensive_Report_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        response = HttpResponse(csv_content_with_bom, content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="TSC2025_Comprehensive_Report_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
         
         # Log the export action
         log_admin_action(
@@ -110,9 +116,12 @@ def export_paid_students_only(request):
         # Generate the CSV content (paid students only)
         csv_content = export_detailed_report_csv()
         
+        # Add BOM for Excel compatibility
+        csv_content_with_bom = '\ufeff' + csv_content
+
         # Create response
-        response = HttpResponse(csv_content, content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="JMT2025_Paid_Students_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        response = HttpResponse(csv_content_with_bom, content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="TSC2025_Paid_Students_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
         
         # Log the export action
         log_admin_action(
@@ -664,6 +673,7 @@ def send_email(request, student_id):
         return redirect('admin_student_detail', student_id=student.id)
     
     try:
+        from .views import send_registration_email
         send_registration_email(student, receipt)
         
         log_admin_action(
@@ -719,6 +729,7 @@ def bulk_action(request):
             
         elif action == 'send-email':
             sent_count = 0
+            from .views import send_registration_email
             for student in students:
                 if student.is_paid:
                     receipt = student.receipts.first()

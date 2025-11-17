@@ -43,11 +43,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'registration.middleware.SecurityHeadersMiddleware',
+    'registration.middleware.PaymentSecurityMiddleware',
     'registration.middleware.PaymentErrorMonitoringMiddleware',
     'registration.signals.AdminRequestMiddleware',
 ]
 
-ROOT_URLCONF = 'sjis_math_club.urls'
+ROOT_URLCONF = 'titanium_science_club.urls'
 
 TEMPLATES = [
     {
@@ -66,7 +67,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'sjis_math_club.wsgi.application'
+WSGI_APPLICATION = 'titanium_science_club.wsgi.application'
 
 # Database - Default to SQLite for development
 DATABASES = {
@@ -176,7 +177,7 @@ CACHES = {
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
-        'KEY_PREFIX': 'jmt',
+        'KEY_PREFIX': 'tsc',
         'TIMEOUT': 300,
     }
 } if config('REDIS_URL', default=None) else {
@@ -302,7 +303,7 @@ PAYMENT_RETRY_DELAY_MINUTES = 5
 # Error Monitoring Configuration
 PAYMENT_ERROR_MONITORING = {
     'ENABLE_ALERTS': True,
-    'ALERT_EMAIL': config('ADMIN_EMAIL', default='admin@jmt.com'),
+    'ALERT_EMAIL': config('ADMIN_EMAIL', default='titaniumscienceclub@sjis.edu.bd'),
     'MAX_FAILED_ATTEMPTS_BEFORE_ALERT': 5,
     'SUSPICIOUS_IP_MONITORING': True,
     'AUTO_BLOCK_SUSPICIOUS_IPS': False,  # Set to True for auto-blocking

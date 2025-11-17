@@ -1,16 +1,217 @@
-<!-- templates/base.html -->
+<!-- templates/base.html - ENHANCED NAVBAR SECTION ONLY -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}JMT 2025{% endblock %}</title>
+    <title>{% block title %}TSC 2026{% endblock %}</title>
     {% block styles %}{% endblock %}
     <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Navbar Styles */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        
+        .navbar-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .nav-link:hover {
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .register-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px 0 rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .register-btn:hover {
+            box-shadow: 0 6px 20px 0 rgba(102, 126, 234, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        .status-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .status-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .status-btn:hover::before {
+            left: 100%;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo-img {
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+            transition: filter 0.3s ease;
+        }
+        
+        .logo-container:hover .logo-img {
+            filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.15));
+        }
+        
+        .mobile-menu {
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .mobile-nav-link {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .mobile-nav-link:hover {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1), transparent);
+            border-left-color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        .hamburger-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .hamburger-icon:hover {
+            transform: scale(1.1) rotate(90deg);
+        }
+        
+        /* Badge styles */
+        .nav-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        
+        /* Dropdown styles for future use */
+        .dropdown {
+            position: relative;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        /* Notification dot */
+        .notification-dot {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid white;
+            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        
+        @keyframes ping {
+            75%, 100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        /* Scrolled navbar effect */
+        .navbar-scrolled {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    
     <script>
         // Get CSRF token for AJAX requests
         function getCookie(name) {
@@ -28,10 +229,8 @@
             return cookieValue;
         }
         
-        // Set CSRF token for all AJAX requests
         const csrftoken = getCookie('csrftoken');
         if (csrftoken) {
-            // Create hidden CSRF input for forms
             const csrfInput = document.createElement('input');
             csrfInput.type = 'hidden';
             csrfInput.name = 'csrfmiddlewaretoken';
@@ -39,22 +238,31 @@
             document.head.appendChild(csrfInput);
         }
 
-        // Mobile menu toggle function
+        // Mobile menu toggle
         function toggleMobileMenu() {
             const mobileMenu = document.getElementById('mobile-menu');
-            const hamburger = document.getElementById('hamburger');
-            const closeIcon = document.getElementById('close-icon');
+            const hamburger = document.getElementById('hamburger-icon');
+            const body = document.body;
             
             mobileMenu.classList.toggle('hidden');
-            hamburger.classList.toggle('hidden');
-            closeIcon.classList.toggle('hidden');
-            
-            // Prevent body scroll when menu is open
-            document.body.classList.toggle('overflow-hidden');
+            hamburger.classList.toggle('fa-bars');
+            hamburger.classList.toggle('fa-times');
+            body.classList.toggle('overflow-hidden');
         }
 
         // Close mobile menu when clicking outside
         document.addEventListener('DOMContentLoaded', function() {
+            // Navbar scroll effect
+            const navbar = document.querySelector('.navbar-glass');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('navbar-scrolled');
+                } else {
+                    navbar.classList.remove('navbar-scrolled');
+                }
+            });
+            
+            // Close mobile menu on outside click
             document.addEventListener('click', function(event) {
                 const mobileMenu = document.getElementById('mobile-menu');
                 const menuButton = document.getElementById('mobile-menu-button');
@@ -65,114 +273,177 @@
                     }
                 }
             });
-        });
-    </script>
-    <style>
-        .scrollable-content {
-            overflow-y: auto;
-            max-height: 100%;
-        }
-    </style>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#1e40af',
-                        'secondary': '#7c3aed',
-                        'accent': '#f59e0b',
+            
+            // Close mobile menu on link click
+            const mobileLinks = document.querySelectorAll('#mobile-menu a');
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        toggleMobileMenu();
                     }
-                }
-            }
-        }
+                });
+            });
+        });
     </script>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg sticky top-0 z-50">
+    <!-- Enhanced Navigation -->
+    <nav class="navbar-glass sticky top-0 z-50 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo Section -->
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 flex items-center">
+                    <a href="{% url 'home' %}" class="logo-container">
                         {% if site_logo %}
-                            <img src="{{ site_logo.logo.url }}" alt="Site Logo" class="h-12 w-auto mr-2">
+                            <img src="{{ site_logo.logo.url }}" alt="TSC Logo" class="logo-img h-14 w-auto">
                         {% else %}
-                            <i class="fas fa-code text-primary text-2xl mr-2"></i>
+                            <div class="bg-gradient-to-br from-purple-600 to-blue-600 p-3 rounded-xl">
+                                <i class="fas fa-atom text-white text-2xl"></i>
+                            </div>
                         {% endif %}
-                        <span class="font-bold text-xl text-gray-900 hidden sm:block">SJIS Math Club</span>
-                        <span class="font-bold text-lg text-gray-900 sm:hidden">JMT</span>
-                    </div>
+                        <div class="hidden lg:block">
+                            <div class="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                Titanium Science Club
+                            </div>
+                            <div class="text-xs text-gray-600 font-medium">TSC 2026</div>
+                        </div>
+                        <div class="lg:hidden">
+                            <span class="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">TSC</span>
+                        </div>
+                    </a>
                 </div>
 
                 <!-- Desktop Menu -->
-                <div class="hidden md:flex items-center space-x-4">
-                    <a href="{% url 'home' %}" class="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        <i class="fas fa-home mr-1"></i>Home
-                    </a>
-                    <a href="{% url 'events_page' %}" class="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        <i class="fas fa-calendar-alt mr-1"></i>Events
-                    </a>
-                    <a href="{% url 'about_us' %}" class="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        <i class="fas fa-info-circle mr-1"></i>About Us
-                    </a>
-                    <a href="{% url 'join_us' %}" class="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        <i class="fas fa-users mr-1"></i>Join Us
+                <div class="hidden md:flex items-center space-x-1 lg:space-x-2">
+                    <a href="{% url 'home' %}" class="nav-link text-gray-700 hover:text-purple-600 px-3 lg:px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-all">
+                        <i class="fas fa-home mr-1 lg:mr-2"></i>
+                        <span class="hidden lg:inline">Home</span>
+                        <span class="lg:hidden">Home</span>
                     </a>
                     
-                    <a href="{% url 'register' %}" class="bg-primary text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                        <i class="fas fa-user-plus mr-1"></i>Register Now
+                    <a href="{% url 'events_page' %}" class="nav-link text-gray-700 hover:text-purple-600 px-3 lg:px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-all">
+                        <i class="fas fa-calendar-alt mr-1 lg:mr-2"></i>
+                        <span class="hidden lg:inline">Events</span>
+                        <span class="lg:hidden">Events</span>
                     </a>
-                    <a href="{% url 'check_registration_status' %}" 
-                    class="text-gray-700 hover:text-primary px-3 py-2">
-                        <i class="fas fa-search mr-1"></i>Check Status
+                    
+                    <a href="{% url 'about_us' %}" class="nav-link text-gray-700 hover:text-purple-600 px-3 lg:px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-all">
+                        <i class="fas fa-info-circle mr-1 lg:mr-2"></i>
+                        <span class="hidden lg:inline">About</span>
+                        <span class="lg:hidden">About</span>
                     </a>
+                    
+                    <a href="{% url 'join_us' %}" class="nav-link text-gray-700 hover:text-purple-600 px-3 lg:px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-all">
+                        <i class="fas fa-users mr-1 lg:mr-2"></i>
+                        <span class="hidden lg:inline">Join Us</span>
+                        <span class="lg:hidden">Join</span>
+                    </a>
+                    
+                    <!-- Divider -->
+                    <div class="hidden lg:block w-px h-8 bg-gray-300 mx-2"></div>
+                    
+                    <!-- Status Check Button -->
+                    <a href="{% url 'check_registration_status' %}" class="status-btn relative text-gray-700 hover:text-purple-600 px-3 lg:px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-all border border-gray-300 hover:border-purple-300">
+                        <i class="fas fa-search mr-1 lg:mr-2"></i>
+                        <span class="hidden lg:inline">Check Status</span>
+                        <span class="lg:hidden">Status</span>
+                    </a>
+                    
+                    <!-- Register Button -->
+                    <a href="{% url 'package_selection' %}" class="register-btn text-white px-4 lg:px-6 py-2 lg:py-2.5 rounded-lg text-sm lg:text-base font-bold transition-all flex items-center space-x-2 relative">
+                        <i class="fas fa-rocket"></i>
+                        <span class="hidden lg:inline">Register Now</span>
+                        
+                    </a>
+                    
                     {% if user.is_staff %}
-                    <a href="{% url 'admin_dashboard' %}" class="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        <i class="fas fa-tachometer-alt mr-1"></i>Dashboard
+                    <!-- Admin Dashboard -->
+                    <a href="{% url 'admin_dashboard' %}" class="nav-link text-gray-700 hover:text-purple-600 px-3 lg:px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-all relative">
+                        <i class="fas fa-tachometer-alt mr-1 lg:mr-2"></i>
+                        <span class="hidden lg:inline">Dashboard</span>
+                        <span class="lg:hidden">Admin</span>
+                        <span class="notification-dot"></span>
                     </a>
                     {% endif %}
                 </div>
 
                 <!-- Mobile menu button -->
                 <div class="md:hidden">
-                    <button type="button" id="mobile-menu-button" onclick="toggleMobileMenu()" class="text-gray-700 hover:text-primary focus:outline-none focus:text-primary transition-colors">
-                        <i id="hamburger" class="fas fa-bars text-xl"></i>
-                        <i id="close-icon" class="fas fa-times text-xl hidden"></i>
+                    <button type="button" id="mobile-menu-button" onclick="toggleMobileMenu()" class="hamburger-icon text-gray-700 hover:text-purple-600 focus:outline-none transition-all p-2">
+                        <i id="hamburger-icon" class="fas fa-bars text-2xl"></i>
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200 shadow-lg">
-            <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="{% url 'home' %}" class="block text-gray-700 hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium transition-colors">
-                    <i class="fas fa-home mr-2"></i>Home
-                </a>
-                <a href="{% url 'events_page' %}" class="block text-gray-700 hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium transition-colors">
-                    <i class="fas fa-calendar-alt mr-2"></i>Events
-                </a>
-                <a href="{% url 'about_us' %}" class="block text-gray-700 hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium transition-colors">
-                    <i class="fas fa-info-circle mr-2"></i>About Us
-                </a>
-                <a href="{% url 'join_us' %}" class="block text-gray-700 hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium transition-colors">
-                    <i class="fas fa-users mr-2"></i>Join Us
+        <div id="mobile-menu" class="mobile-menu hidden md:hidden bg-white border-t border-gray-200 shadow-lg">
+            <div class="px-4 pt-4 pb-6 space-y-2">
+                <!-- Mobile Nav Links -->
+                <a href="{% url 'home' %}" class="mobile-nav-link flex items-center text-gray-700 hover:text-purple-600 px-4 py-3 rounded-lg font-medium transition-all">
+                    <i class="fas fa-home w-6 mr-3 text-lg"></i>
+                    <span>Home</span>
                 </a>
                 
-                <a href="{% url 'register' %}" class="block bg-primary text-white hover:bg-blue-700 px-3 py-2 rounded-md text-base font-medium transition-colors">
-                    <i class="fas fa-user-plus mr-2"></i>Register Now
+                <a href="{% url 'events_page' %}" class="mobile-nav-link flex items-center text-gray-700 hover:text-purple-600 px-4 py-3 rounded-lg font-medium transition-all">
+                    <i class="fas fa-calendar-alt w-6 mr-3 text-lg"></i>
+                    <span>Events</span>
                 </a>
-                <a href="{% url 'check_registration_status' %}" 
-                class="text-gray-700 hover:text-primary px-3 py-2">
-                    <i class="fas fa-search mr-1"></i>Check Status
+                
+                <a href="{% url 'about_us' %}" class="mobile-nav-link flex items-center text-gray-700 hover:text-purple-600 px-4 py-3 rounded-lg font-medium transition-all">
+                    <i class="fas fa-info-circle w-6 mr-3 text-lg"></i>
+                    <span>About Us</span>
                 </a>
+                
+                <a href="{% url 'join_us' %}" class="mobile-nav-link flex items-center text-gray-700 hover:text-purple-600 px-4 py-3 rounded-lg font-medium transition-all">
+                    <i class="fas fa-users w-6 mr-3 text-lg"></i>
+                    <span>Join Us</span>
+                </a>
+                
+                <!-- Divider -->
+                <div class="border-t border-gray-200 my-4"></div>
+                
+                <!-- Status Check -->
+                <a href="{% url 'check_registration_status' %}" class="mobile-nav-link flex items-center text-gray-700 hover:text-purple-600 px-4 py-3 rounded-lg font-medium transition-all border border-gray-300">
+                    <i class="fas fa-search w-6 mr-3 text-lg"></i>
+                    <span>Check Registration Status</span>
+                </a>
+                
+                <!-- Register Button -->
+                <a href="{% url 'package_selection' %}" class="register-btn flex items-center justify-center text-white px-6 py-4 rounded-lg font-bold transition-all space-x-2 mt-4">
+                    <i class="fas fa-rocket text-xl"></i>
+                    <span class="text-lg">Register Now</span>
+                    <span class="nav-badge">✨</span>
+                </a>
+                
                 {% if user.is_staff %}
-                <a href="{% url 'admin_dashboard' %}" class="block text-gray-700 hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium transition-colors">
-                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                <!-- Admin Dashboard -->
+                <a href="{% url 'admin_dashboard' %}" class="mobile-nav-link flex items-center text-purple-600 hover:text-purple-800 px-4 py-3 rounded-lg font-medium transition-all border-2 border-purple-300 mt-4 relative">
+                    <i class="fas fa-tachometer-alt w-6 mr-3 text-lg"></i>
+                    <span>Admin Dashboard</span>
+                    <span class="notification-dot"></span>
                 </a>
                 {% endif %}
+                
+                <!-- Mobile Social Links (Optional) -->
+                <div class="pt-4 border-t border-gray-200 mt-4">
+                    <p class="text-xs text-gray-500 uppercase font-semibold mb-3 px-4">Connect With Us</p>
+                    <div class="flex justify-center space-x-6">
+                        <a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">
+                            <i class="fab fa-facebook text-2xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-600 hover:text-pink-600 transition-colors">
+                            <i class="fab fa-instagram text-2xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-600 hover:text-blue-400 transition-colors">
+                            <i class="fab fa-twitter text-2xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-600 hover:text-red-600 transition-colors">
+                            <i class="fab fa-youtube text-2xl"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -196,7 +467,7 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
+    <!-- Footer (keep your existing footer) -->
     <footer class="bg-gray-800 text-white mt-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -210,7 +481,7 @@
                     <h3 class="font-semibold text-lg mb-4">Quick Links</h3>
                     <ul class="space-y-2">
                         <li><a href="{% url 'home' %}" class="text-gray-300 hover:text-white transition-colors">Home</a></li>
-                        <li><a href="{% url 'register' %}" class="text-gray-300 hover:text-white transition-colors">Register</a></li>
+                        <li><a href="{% url 'package_selection' %}" class="text-gray-300 hover:text-white transition-colors">Register</a></li>
                         <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Events</a></li>
                         <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Contact</a></li>
                     </ul>
@@ -218,8 +489,8 @@
                 <div>
                     <h3 class="font-semibold text-lg mb-4">Contact Info</h3>
                     <div class="space-y-2">
-                        <p class="text-gray-300"><i class="fas fa-envelope mr-2"></i>sjismathclub@gmail.com</p>
-                        <p class="text-gray-300"><i class="fas fa-phone mr-2"></i>01704010877</p>
+                        <p class="text-gray-300"><i class="fas fa-envelope mr-2"></i>titaniumscienceclub@sjis.edu.bd</p>
+                        <p class="text-gray-300"><i class="fas fa-phone mr-2"></i>+8801842077740</p>
                         <p class="text-gray-300"><i class="fas fa-map-marker-alt mr-2"></i>97, Asad Avenue, Mohammadpur, Dhaka-1207, Bangladesh</p>
                     </div>
                 </div>
@@ -229,14 +500,6 @@
             </div>
         </div>
     </footer>
-
-    <div id="fullscreen-overlay" class="fixed inset-0 z-50 hidden bg-black bg-opacity-90 p-4 sm:p-8">
-        <button onclick="closeFullscreen()" class="absolute top-4 right-4 text-white text-4xl font-bold">&times;</button>
-        <div id="fullscreen-content" class="w-full h-full flex items-center justify-center">
-            <div class="scrollable-content w-full h-full">
-            </div>
-        </div>
-    </div>
 
     <script src="{% static 'registration/js/htmx-enhancement.js' %}"></script>
     {% block scripts %}{% endblock %}

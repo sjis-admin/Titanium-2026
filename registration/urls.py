@@ -1,15 +1,22 @@
-# registration/urls.py - ENHANCED VERSION
+# registration/urls.py - COMPLETE FILE
 
 from django.urls import path
 from . import views
 from . import admin_views
 
 urlpatterns = [
-    # Public URLs
+    # ============= PUBLIC URLS =============
     path('', views.home, name='home'),
-    path('register/', views.student_registration, name='register'),
     
-    # Enhanced HTMX endpoints
+    # ============= PACKAGE SELECTION & REGISTRATION =============
+    # NEW: Package selection (first step)
+    path('register/', views.package_selection, name='package_selection'),
+    
+    # UPDATED: Registration with package type
+    path('register/regular/', views.student_registration, {'package_type': 'regular'}, name='register_regular'),
+    path('register/bundle/<int:bundle_id>/', views.student_registration, {'package_type': 'bundle'}, name='register_bundle'),
+    
+    # ============= HTMX ENDPOINTS =============
     path('get-events-for-grade/', views.get_events_for_grade, name='get_events_for_grade'),
     path('get-group-for-grade/', views.get_group_for_grade, name='get_group_for_grade'),
     path('calculate-total/', views.calculate_total, name='calculate_total'),
@@ -17,19 +24,18 @@ urlpatterns = [
     path('validate-grade/', views.validate_grade, name='validate_grade'),
     path('check-event-availability/', views.check_event_availability, name='check_event_availability'),
     
-    # Public information pages
+    # ============= PUBLIC INFORMATION PAGES =============
     path('events/', views.events_page, name='events_page'),
     path('about-us/', views.about_us, name='about_us'),
     path('valorant/', views.valorant_page, name='valorant_page'),
-
     path('join-us/', views.join_us, name='join_us'),
     
-    # Events API endpoints
+    # ============= EVENTS API ENDPOINTS =============
     path('api/events/<int:event_id>/rules/', views.event_rules_api, name='event_rules_api'),
     path('api/events/<int:event_id>/details/', views.event_details_api, name='event_details_api'),
     
-    # ============= ENHANCED PAYMENT FLOW =============
-    # NEW: Payment instructions page (shown before gateway)
+    # ============= PAYMENT FLOW =============
+    # Payment instructions page (shown before gateway)
     path('payment/instructions/<int:payment_id>/', views.payment_instructions, name='payment_instructions'),
     
     # Payment gateway
@@ -41,14 +47,14 @@ urlpatterns = [
     path('payment/cancel/<int:payment_id>/', views.payment_cancel, name='payment_cancel'),
     path('payment/ipn/', views.payment_ipn, name='payment_ipn'),
     
-    # NEW: Payment recovery and error handling
+    # Payment recovery and error handling
     path('payment/expired/<int:payment_id>/', views.payment_expired, name='payment_expired'),
     path('payment/failed-init/<int:payment_id>/', views.payment_failed_init, name='payment_failed_init'),
     path('payment/retry/<int:payment_id>/', views.retry_payment, name='retry_payment'),
     path('payment/timeout/', views.handle_payment_timeout, name='payment_timeout'),
     path('payment/check/<int:student_id>/<str:transaction_id>/', views.check_payment_status, name='check_payment_status'),
     
-    # Receipt and verification URLs
+    # ============= RECEIPT AND VERIFICATION =============
     path('qr-code/<str:receipt_number>/', views.generate_qr_code, name='generate_qr_code'),
     path('verify/receipt/<str:receipt_number>/', views.verify_receipt, name='verify_receipt'),
     path('receipt/print/<str:receipt_number>/', views.receipt_print_view, name='receipt_print_view'),
@@ -64,13 +70,13 @@ urlpatterns = [
     path('dashboard/reports/', admin_views.reports, name='admin_reports'),
     path('dashboard/schools/bulk-add/', admin_views.bulk_add_schools, name='bulk_add_schools'),
     
-    # Export URLs
+    # ============= EXPORT URLS =============
     path('dashboard/reports/export-comprehensive/', admin_views.export_detailed_report, name='export_detailed_report'),
     path('dashboard/reports/export-paid-only/', admin_views.export_paid_students_only, name='export_paid_students_only'),
     path('dashboard/reports/print/', admin_views.print_detailed_report_pdf, name='print_detailed_report'),
     path('dashboard/reports/export-valorant/', admin_views.export_valorant_applications, name='export_valorant_applications'),
     
-    # Admin actions
+    # ============= ADMIN ACTIONS =============
     path('dashboard/verify-payment/<int:payment_id>/', admin_views.verify_payment, name='verify_payment'),
     path('dashboard/generate-receipt/<int:student_id>/', admin_views.generate_receipt, name='generate_receipt'),
     path('dashboard/send-email/<int:student_id>/', admin_views.send_email, name='send_email'),

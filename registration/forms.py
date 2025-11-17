@@ -15,6 +15,10 @@ class StudentRegistrationForm(forms.ModelForm):
             'placeholder': 'Enter your school/college name'
         })
     )
+    selected_events = forms.CharField(
+        widget=forms.HiddenInput(),
+        required=False,  # We'll do custom validation in clean_selected_events
+    )
 
     class Meta:
         model = Student
@@ -67,17 +71,13 @@ class StudentRegistrationForm(forms.ModelForm):
         grade_choices.extend([(grade.id, grade.name) for grade in grades])
         self.fields['grade'].choices = grade_choices
 
-    def clean(self):
-        cleaned_data = super().clean()
+    def clean_selected_events(self):
+        selected_events_str = self.cleaned_data.get('selected_events', '').strip()
         
-        # Get selected events directly from POST data
-        selected_events_str = self.data.get('selected_events', '').strip()
+        logger.info(f"clean_selected_events() - raw data: '{selected_events_str}'")
         
-        logger.info(f"Form clean() - selected_events: '{selected_events_str}'")
-        
-        if not selected_events_str or selected_events_str == '':
-            logger.error("No events selected in form submission")
-            raise ValidationError({"selected_events": "Please select at least one event."})
+        if not selected_events_str:
+            raise ValidationError("Please select at least one event.")
         
         try:
             event_option_ids = []
@@ -95,49 +95,69 @@ class StudentRegistrationForm(forms.ModelForm):
                     logger.warning(f"Non-digit value in selected_events: {id_str}")
             
             if not event_option_ids:
-                raise ValidationError({"selected_events": "Please select at least one event."})
+                raise ValidationError("Please select at least one event.")
             
             event_options = EventOption.objects.filter(
                 id__in=event_option_ids, 
                 event__is_active=True
             )
             
-            found_ids = list(event_options.values_list('id', flat=True))
-            
             if len(event_options) != len(event_option_ids):
+                found_ids = list(event_options.values_list('id', flat=True))
                 missing_ids = set(event_option_ids) - set(found_ids)
                 logger.error(f"Some events not found. Missing IDs: {missing_ids}")
-                raise ValidationError({"selected_events": "One or more selected events are invalid."})
+                raise ValidationError("One or more selected events are invalid.")
             
-            grade = cleaned_data.get('grade')
-            if grade:
-                invalid_events = []
-                for event_option in event_options:
-                    if not event_option.event.target_grades.filter(id=grade.id).exists():
-                        invalid_events.append(event_option.event.name)
-                
-                if invalid_events:
-                    raise ValidationError({
-                        "selected_events": f"These events are not available for {grade.name}: {', '.join(invalid_events)}"
-                    })
+            logger.info(f"✓ clean_selected_events passed - {len(event_options)} events found")
+            return event_options
+
+        except (ValueError, TypeError) as e:
+            logger.error(f"Error parsing selected_events: {e}")
+            raise ValidationError("Invalid event selection format.")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Cross-field validation for grade and events
+        grade = cleaned_data.get('grade')
+        event_options = cleaned_data.get('selected_events')
+        
+        # Check if this is a bundle registration by looking for 'bundle_id' in the submitted data
+        is_bundle_registration = 'bundle_id' in self.data
+        
+        if grade and event_options:
+            invalid_events = []
+            valid_event_options = []
             
-            cleaned_data['selected_events'] = event_options
-            logger.info(f"✓ Form validation passed - {len(event_options)} events selected")
+            for event_option in event_options:
+                if event_option.event.target_grades.filter(id=grade.id).exists():
+                    valid_event_options.append(event_option)
+                else:
+                    invalid_events.append(event_option.event.name)
             
-        except ValueError as e:
-            logger.error(f"ValueError in form validation: {e}")
-            raise ValidationError({"selected_events": "Invalid event selection format."})
+            if invalid_events:
+                if is_bundle_registration:
+                    # For bundles, silently filter out invalid events
+                    cleaned_data['selected_events'] = valid_event_options
+                    logger.info(f"Bundle registration for grade {grade.name}: "
+                                f"Filtered out invalid events: {', '.join(invalid_events)}")
+                else:
+                    # For regular registration, raise a validation error
+                    self.add_error(
+                        'selected_events',
+                        f"These events are not available for {grade.name}: {', '.join(invalid_events)}"
+                    )
         
         # Validate school
         school_college = cleaned_data.get('school_college')
         other_school = cleaned_data.get('other_school', '').strip()
         
         if not school_college and not other_school:
-            raise ValidationError({"other_school": "Please select or specify your school/college."})
+            self.add_error("other_school", "Please select or specify your school/college.")
         
         # Validate grade
         if not cleaned_data.get('grade'):
-            raise ValidationError({"grade": "Please select your grade."})
+            self.add_error("grade", "Please select your grade.")
         
         return cleaned_data
 

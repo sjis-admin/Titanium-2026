@@ -6,10 +6,14 @@ from django.urls import path, reverse
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.db.models import Count
-from .models import (Student, Event, EventOption, Payment, AdminLog, Receipt, 
-                    StudentEventRegistration, School, Countdown, 
-                    HomePageAsset, SocialMediaProfile, TeamMemberProfile, PastEventImage,
-                    ValorantBackgroundVideo, SiteLogo, Grade, ValorantApplicationSettings)
+from .models import (
+    Student, School, Grade, Event, EventOption, Payment, Receipt,
+    StudentEventRegistration, Team, TeamMember, ValorantTeamMember,
+    PaymentAttempt, AdminLog, SecurityAlert, Countdown, HomePageAsset,
+    SocialMediaProfile, TeamMemberProfile, PastEventImage,
+    ValorantBackgroundVideo, SiteLogo, ValorantApplicationSettings,
+    DiscountBundle, BundleEvent  # ADD THESE TWO
+)
 
 @admin.register(TeamMemberProfile)
 class TeamMemberProfileAdmin(admin.ModelAdmin):
@@ -244,7 +248,80 @@ class EventAdmin(admin.ModelAdmin):
         js = ('admin/js/event_admin.js',)
 
 
+@admin.register(EventOption)
+class EventOptionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'event', 'event_type', 'fee', 'max_participants')
+    list_filter = ('event__name', 'event_type')
+    search_fields = ['name', 'event__name']
+    ordering = ('event__name', 'name')
+
 
 @admin.register(ValorantApplicationSettings)
 class ValorantApplicationSettingsAdmin(admin.ModelAdmin):
     list_display = ('is_enabled',)
+
+
+
+class BundleEventInline(admin.TabularInline):
+    model = BundleEvent
+    extra = 1
+    autocomplete_fields = ['event_option']
+    fields = ['event_option', 'display_order']
+    ordering = ['display_order']
+
+
+@admin.register(DiscountBundle)
+class DiscountBundleAdmin(admin.ModelAdmin):
+    list_display = ['name', 'bundle_type', 'price', 'grade_range', 'is_active', 'display_order']
+    list_filter = ['bundle_type', 'is_active']
+    search_fields = ['name', 'description']
+    list_editable = ['is_active', 'display_order']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'bundle_type', 'description', 'price')
+        }),
+        ('Grade Range', {
+            'fields': ('min_grade', 'max_grade'),
+            'description': 'Select the grade range for which this bundle is available'
+        }),
+        ('Visual Appearance', {
+            'fields': ('badge_color', 'icon'),
+            'description': 'Customize how this bundle appears on the selection page'
+        }),
+        ('Settings', {
+            'fields': ('is_active', 'display_order')
+        }),
+    )
+    
+    inlines = [BundleEventInline]
+    
+    def grade_range(self, obj):
+        if obj.min_grade and obj.max_grade:
+            return f"{obj.min_grade.name} - {obj.max_grade.name}"
+        return "Not set"
+    grade_range.short_description = 'Grade Range'
+    
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # Log action
+        action = 'Updated' if change else 'Created'
+        from .utils import log_admin_action
+        log_admin_action(
+            user=request.user,
+            action='UPDATE' if change else 'CREATE',
+            model_name='DiscountBundle',
+            object_id=obj.id,
+            description=f'{action} bundle: {obj.name}',
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+
+
+@admin.register(BundleEvent)
+class BundleEventAdmin(admin.ModelAdmin):
+    list_display = ['bundle', 'event_option', 'display_order']
+    list_filter = ['bundle']
+    search_fields = ['bundle__name', 'event_option__event__name']
+    autocomplete_fields = ['bundle', 'event_option']
+    list_editable = ['display_order']
+    ordering = ['bundle', 'display_order']
