@@ -70,7 +70,7 @@
                     </div>
 
                     <!-- CTA Button -->
-                    <a href="{% url 'register_regular' %}" 
+                    <a href="{% url 'registration:register_regular' %}" 
                        class="block w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-center py-4 rounded-xl font-bold text-lg transition-all transform group-hover:scale-105 shadow-lg">
                         <i class="fas fa-arrow-right mr-2"></i>
                         Select Regular Package
@@ -198,7 +198,7 @@
                             </div>
 
                             <!-- Select Button -->
-                            <a href="{% url 'register_bundle' bundle.id %}" 
+                            <a href="{% url 'registration:register_bundle' bundle.id %}" 
                                class="block w-full bg-{{ bundle.badge_color }}-500 hover:bg-{{ bundle.badge_color }}-600 text-white text-center py-3 rounded-lg font-bold transition-all">
                                 <i class="fas fa-shopping-cart mr-2"></i>
                                 Select This Bundle
@@ -251,7 +251,7 @@
                             </div>
 
                             <!-- Select Button -->
-                            <a href="{% url 'register_bundle' bundle.id %}" 
+                            <a href="{% url 'registration:register_bundle' bundle.id %}" 
                                class="block w-full bg-{{ bundle.badge_color }}-500 hover:bg-{{ bundle.badge_color }}-600 text-white text-center py-3 rounded-lg font-bold transition-all">
                                 <i class="fas fa-shopping-cart mr-2"></i>
                                 Select This Bundle

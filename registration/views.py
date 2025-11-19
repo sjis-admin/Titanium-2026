@@ -10,10 +10,12 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils import timezone
 from django.db import transaction, models
+from django.core.mail import EmailMultiAlternatives
 from django.db.models import Min, Exists, OuterRef, Subquery
 from django.urls import reverse
 from django.contrib.admin.views.decorators import staff_member_required 
 import requests
+import time
 import json
 import logging
 import hashlib
@@ -307,7 +309,7 @@ def student_registration(request):
                 )
                 
                 # Redirect to payment instructions
-                return redirect('payment_instructions', payment_id=payment.id)
+                return redirect('registration:payment_instructions', payment_id=payment.id)
 
             except ValueError as ve:
                 logger.error(f'Validation error: {ve}')
@@ -369,14 +371,20 @@ def check_registration_status(request):
             )
             
             # FIXED: Use prefetch_related for reverse relationships
-            event_registrations = StudentEventRegistration.objects.filter(
-                student=student
-            ).select_related(
-                'event_option__event', 
-                'payment'
-            ).prefetch_related(
-                'team__members__valorant_info'  # FIXED
-            )
+            event_registrations = (
+                StudentEventRegistration.objects.filter(
+                    student=student,
+                    payment=successful_payment
+                )
+                .select_related('event_option__event')
+            ) if successful_payment else StudentEventRegistration.objects.none()
+
+            # Prefetch team only if exists
+            try:
+                event_registrations = event_registrations.prefetch_related('team__members__valorant_info')
+            except Exception:
+                pass
+
             
             context = {
                 'student': student,
@@ -784,134 +792,186 @@ def retry_payment(request, payment_id):
 @csrf_exempt
 def payment_success(request):
     """
-    Enhanced payment success handler with better error handling and email sending
+    Enhanced payment success handler with detailed logging and robust error handling.
     """
-    post_data = request.POST
-    tran_id = post_data.get('tran_id')
+    # Create a logger instance
+    payment_logger = logging.getLogger('payment')
 
-    if not tran_id:
-        logger.error("❌ Payment success callback without transaction ID")
-        return HttpResponseBadRequest("Invalid request: Missing transaction ID.")
+    # Log the beginning of the success callback
+    payment_logger.info("Received request on payment_success URL")
+    payment_logger.info(f"Request Method: {request.method}")
+    payment_logger.info(f"Request Headers: {dict(request.headers)}")
+    payment_logger.info(f"Request GET data: {dict(request.GET)}")
+    payment_logger.info(f"Request POST data: {dict(request.POST)}")
 
     try:
-        payment = Payment.objects.select_for_update().get(transaction_id=tran_id)
-    except Payment.DoesNotExist:
-        logger.error(f"❌ Payment success for non-existent transaction: {tran_id}")
-        return HttpResponseBadRequest("Invalid Transaction.")
+        post_data = request.POST
+        get_data = request.GET
+        tran_id = post_data.get('tran_id') or get_data.get('tran_id')
 
-    # Already processed - idempotency check
-    if payment.status == 'SUCCESS':
-        logger.info(f"ℹ️ Payment {tran_id} already processed")
-        receipt = Receipt.objects.filter(payment=payment).first()
-        
-        # FIXED: Use prefetch_related for reverse FK relationships
-        event_registrations = StudentEventRegistration.objects.filter(
-            student=payment.student,
-            payment=payment
-        ).select_related(
-            'event_option__event'
-        ).prefetch_related(
-            'team__members__valorant_info'  # FIXED: Use prefetch_related for reverse relationships
-        )
-        
-        context = {
-            'student': payment.student,
-            'payment': payment,
-            'receipt': receipt,
-            'event_registrations': event_registrations,
-            'already_processed': True,
-        }
-        return render(request, 'registration/payment_success.html', context)
+        if not tran_id:
+            payment_logger.error("Payment success callback without transaction ID.")
+            return HttpResponseBadRequest("Invalid request: Missing transaction ID.")
 
-    # Validate with SSLCommerz
-    sslcz = SSLCOMMERZ()
-    is_valid, validation_data = sslcz.validate_ipn(post_data)
+        payment_logger.info(f"Processing success for transaction ID: {tran_id}")
 
-    if not is_valid or validation_data.get('status') not in ['VALID', 'VALIDATED']:
-        logger.error(f"❌ Invalid payment validation for {tran_id}")
-        payment.status = 'FAILED'
-        payment.gateway_response = validation_data
-        payment.save()
-        return HttpResponseBadRequest("Payment validation failed.")
+        # Retry logic to handle race condition with IPN
+        max_retries = 10
+        retry_delay = 0.8
+        payment = None
 
-    # Amount verification
-    if not verify_payment_amount(payment.amount, validation_data.get('amount')):
-        logger.error(f"❌ Amount mismatch for {tran_id}: Expected {payment.amount}, Got {validation_data.get('amount')}")
-        payment.status = 'FAILED'
-        payment.gateway_response = validation_data
-        payment.save()
-        return HttpResponseBadRequest("Payment validation failed: Amount mismatch.")
+        for attempt in range(max_retries):
+            try:
+                payment = Payment.objects.select_related('student').get(transaction_id=tran_id)
+                payment_logger.info(f"Payment found on attempt {attempt + 1}: {tran_id}, Status: {payment.status}")
 
-    # Process successful payment
-    try:
-        with transaction.atomic():
-            # Update payment
-            payment.status = 'SUCCESS'
-            payment.payment_method = validation_data.get('card_type', '')
-            payment.gateway_txnid = validation_data.get('val_id')
-            payment.gateway_response = validation_data
-            payment.completed_at = timezone.now()
-            payment.save()
+                if payment.status == 'SUCCESS':
+                    break
+                
+                if payment.status == 'PENDING' and attempt < max_retries - 1:
+                    payment_logger.info(f"Payment {tran_id} is PENDING (attempt {attempt + 1}), waiting for IPN...")
+                    time.sleep(retry_delay)
+                    continue
+                else:
+                    break
+            except Payment.DoesNotExist:
+                if attempt < max_retries - 1:
+                    payment_logger.warning(f"Payment not found on attempt {attempt + 1}, waiting...")
+                    time.sleep(retry_delay)
+                else:
+                    payment_logger.error(f"Payment not found after {max_retries} attempts: {tran_id}")
+                    return render(request, 'registration/payment_error.html', {
+                        'error': 'Payment record not found',
+                        'message': f'Please contact support with transaction ID: {tran_id}',
+                        'transaction_id': tran_id
+                    })
 
-            # Update student
-            student = payment.student
-            student.is_paid = True
-            student.payment_verified = True
-            student.save()
-
-            # Create or get receipt
-            receipt, created = Receipt.objects.get_or_create(
-                student=student,
-                payment=payment,
-                defaults={'generated_by': None}
-            )
+        if payment.status == 'SUCCESS':
+            payment_logger.info(f"Payment {tran_id} is already SUCCESS. Displaying success page.")
             
-            if created:
-                logger.info(f"✅ Receipt {receipt.receipt_number} created for {student.name}")
-            else:
-                logger.info(f"ℹ️ Receipt {receipt.receipt_number} already exists for {student.name}")
+            try:
+                receipt = Receipt.objects.select_related('payment', 'student').get(payment=payment)
+            except Receipt.DoesNotExist:
+                payment_logger.error(f"Receipt not found for successful payment: {tran_id}. Creating a new one.")
+                try:
+                    receipt = Receipt.objects.create(student=payment.student, payment=payment)
+                    payment_logger.info(f"Created missing receipt: {receipt.receipt_number}")
+                except Exception as e:
+                    payment_logger.error(f"Failed to create missing receipt: {e}", exc_info=True)
+                    return render(request, 'registration/payment_error.html', {
+                        'error': 'Receipt Generation Error',
+                        'message': 'Payment was successful, but the receipt could not be generated. Please contact support.',
+                        'transaction_id': tran_id
+                    })
+
+            event_registrations = StudentEventRegistration.objects.filter(
+                student=payment.student, payment=payment
+            ).select_related('event_option__event').prefetch_related('team__members__valorant_info')
+
+            context = {
+                'student': payment.student,
+                'payment': payment,
+                'receipt': receipt,
+                'event_registrations': event_registrations,
+                'already_processed': True,
+            }
+            return render(request, 'registration/payment_success.html', context)
+
+        if post_data.get('status'):
+            payment_logger.info(f"Validating payment {tran_id} with POST data from SSLCommerz.")
             
-            # Clear session
-            if 'pending_payment_id' in request.session:
-                del request.session['pending_payment_id']
-            
-            logger.info(f'✅ Payment successful: {tran_id} for student {student.name}')
+            sslcz = SSLCOMMERZ()
+            is_valid, validation_data = sslcz.validate_ipn(post_data)
 
-        # Send email AFTER transaction is committed
-        try:
-            email_sent = send_registration_email(student, receipt)
-            if email_sent:
-                logger.info(f"✅ Registration email sent to {student.email}")
-            else:
-                logger.warning(f"⚠️ Failed to send email to {student.email} but payment succeeded")
-        except Exception as email_error:
-            logger.error(f"❌ Email sending error: {email_error}")
-            # Don't fail the payment if email fails
+            if not is_valid or validation_data.get('status') not in ['VALID', 'VALIDATED']:
+                payment_logger.error(f"Invalid payment validation for {tran_id}. Response: {validation_data}")
+                payment.status = 'FAILED'
+                payment.gateway_response = validation_data
+                payment.save()
+                return render(request, 'registration/payment_error.html', {
+                    'error': 'Payment Validation Failed',
+                    'message': 'The payment could not be validated. Please contact support.',
+                    'transaction_id': tran_id
+                })
 
-        # FIXED: Use prefetch_related for reverse FK relationships
-        event_registrations = StudentEventRegistration.objects.filter(
-            student=student,
-            payment=payment
-        ).select_related(
-            'event_option__event'
-        ).prefetch_related(
-            'team__members__valorant_info'  # FIXED: Use prefetch_related
-        )
+            try:
+                expected_amount = float(payment.amount)
+                received_amount = float(validation_data.get('amount', 0))
 
-        context = {
-            'student': student,
-            'payment': payment,
-            'receipt': receipt,
-            'event_registrations': event_registrations,
-            'already_processed': False,
-        }
+                if abs(expected_amount - received_amount) > 0.01:
+                    payment_logger.error(f"Amount mismatch for {tran_id}: Expected {expected_amount}, Got {received_amount}")
+                    payment.status = 'FAILED'
+                    payment.gateway_response = validation_data
+                    payment.save()
+                    return render(request, 'registration/payment_error.html', {
+                        'error': 'Payment Validation Failed',
+                        'message': 'There was a mismatch in the payment amount. Please contact support.',
+                        'transaction_id': tran_id
+                    })
+            except (ValueError, TypeError) as e:
+                payment_logger.error(f"Amount validation error for {tran_id}: {e}", exc_info=True)
+                return render(request, 'registration/payment_error.html', {
+                    'error': 'Payment Validation Error',
+                    'message': 'Invalid amount format in payment data. Please contact support.',
+                    'transaction_id': tran_id
+                })
 
-        return render(request, 'registration/payment_success.html', context)
+            with transaction.atomic():
+                payment = Payment.objects.select_for_update().get(transaction_id=tran_id)
+                if payment.status == 'SUCCESS':
+                    payment_logger.info(f"Payment {tran_id} was processed by IPN during validation.")
+                else:
+                    payment.status = 'SUCCESS'
+                    payment.payment_method = (validation_data.get('card_type', '') or '')[:100]
+                    payment.gateway_txnid = validation_data.get('val_id')
+                    payment.gateway_response = validation_data
+                    payment.completed_at = timezone.now()
+                    payment.save()
+
+                    student = payment.student
+                    student.is_paid = True
+                    student.payment_verified = True
+                    student.save()
+
+                    payment_logger.info(f'Payment marked successful by success view: {tran_id}')
+
+                receipt, created = Receipt.objects.get_or_create(
+                    student=payment.student, payment=payment,
+                    defaults={'generated_by': None}
+                )
+                if created:
+                    payment_logger.info(f"Receipt {receipt.receipt_number} created in success view.")
+
+            # Send confirmation email asynchronously
+            send_registration_email(payment.student, receipt)
+
+            event_registrations = StudentEventRegistration.objects.filter(
+                student=payment.student, payment=payment
+            ).select_related('event_option__event').prefetch_related('team__members__valorant_info')
+
+            context = {
+                'student': payment.student,
+                'payment': payment,
+                'receipt': receipt,
+                'event_registrations': event_registrations,
+                'already_processed': False,
+            }
+            return render(request, 'registration/payment_success.html', context)
+
+        payment_logger.warning(f"Payment {tran_id} is not yet successful and no POST data to validate. Status: {payment.status}")
+        return render(request, 'registration/payment_error.html', {
+            'error': 'Payment Verification Pending',
+            'message': 'Your payment is being processed. Please wait a moment and check your status, or contact support if the issue persists.',
+            'transaction_id': tran_id
+        })
 
     except Exception as e:
-        logger.error(f'❌ Error processing successful payment {tran_id}: {e}', exc_info=True)
-        return HttpResponseBadRequest('Payment processing error.')
-
+        # Log any unexpected errors that occur in the view
+        payment_logger.error(f"An unexpected error occurred in payment_success view: {e}", exc_info=True)
+        if settings.TESTING:
+            raise
+        # Return a generic error page to the user
+        return render(request, '500.html', status=500)
 
 @staff_member_required
 def generate_receipt(request, student_id):
@@ -945,14 +1005,20 @@ def generate_receipt(request, student_id):
         )
     
     # FIXED: Get event registrations with proper prefetch
-    event_registrations = StudentEventRegistration.objects.filter(
-        student=student,
-        payment=payment
-    ).select_related(
-        'event_option__event'
-    ).prefetch_related(
-        'team__members__valorant_info'  # FIXED
+    event_registrations = (
+        StudentEventRegistration.objects.filter(
+            student=payment.student,
+            payment=payment
+        )
+        .select_related('event_option__event')
     )
+
+    # Prefetch team only if exists
+    try:
+        event_registrations = event_registrations.prefetch_related('team__members__valorant_info')
+    except Exception:
+        pass
+
     
     context = {
         'student': student,
@@ -1237,11 +1303,25 @@ def cleanup_expired_payments():
 @require_POST
 def payment_ipn(request):
     """
-    Enhanced IPN handler with better security and error handling
+    Enhanced IPN handler with better security and error handling, including IP whitelisting.
     """
     ip_address = get_client_ip(request)
     user_agent = request.META.get('HTTP_USER_AGENT', '')
     
+    # --- IP Whitelisting Check ---
+    if settings.SECURE_PAYMENT_PROCESSING.get('ENABLE_IP_WHITELISTING'):
+        whitelisted_ips = settings.SECURE_PAYMENT_PROCESSING.get('SSLCOMMERZ_IPS', [])
+        if ip_address not in whitelisted_ips:
+            log_security_alert(
+                'INVALID_IPN_SOURCE',
+                f'IPN request from non-whitelisted IP: {ip_address}',
+                ip_address,
+                user_agent,
+                data=request.POST.dict()
+            )
+            logger.warning(f"⚠️ IPN request rejected from non-whitelisted IP: {ip_address}")
+            return HttpResponse(status=403) # Using 403 Forbidden is appropriate
+
     logger.info(f"📨 IPN received from {ip_address}")
 
     try:
@@ -1269,9 +1349,9 @@ def payment_ipn(request):
             logger.warning(f"⚠️ IPN validation failed for {tran_id}")
             return HttpResponseBadRequest('Invalid IPN')
 
-        # Get payment record
+        # Get payment record - FIXED: Use normal get() first
         try:
-            payment = Payment.objects.select_for_update().get(transaction_id=tran_id)
+            payment = Payment.objects.get(transaction_id=tran_id)
         except Payment.DoesNotExist:
             log_security_alert(
                 'PAYMENT_FRAUD',
@@ -1303,6 +1383,9 @@ def payment_ipn(request):
 
         # Process based on status and risk level
         with transaction.atomic():
+            # FIXED: Now use select_for_update INSIDE the transaction
+            payment = Payment.objects.select_for_update().get(transaction_id=tran_id)
+            
             status = validation_response.get('status')
             risk_level = validation_response.get('risk_level', '0')
             val_id = validation_response.get('val_id')
@@ -1331,10 +1414,7 @@ def payment_ipn(request):
                     
                     # Send email asynchronously
                     if not receipt.email_sent:
-                        try:
-                            send_registration_email(student, receipt)
-                        except Exception as e:
-                            logger.error(f"❌ Failed to send email via IPN: {e}")
+                        send_registration_email(student, receipt)
                 
                 else:
                     # High risk - flag for manual review
@@ -1383,7 +1463,7 @@ from .utils import (
 
 def send_registration_email(student, receipt):
     """
-    Send registration confirmation email - FIXED VERSION
+    Send registration confirmation email asynchronously.
     """
     try:
         # Get all event registrations for this student
@@ -1397,7 +1477,7 @@ def send_registration_email(student, receipt):
             'student': student,
             'receipt': receipt,
             'payment': receipt.payment,
-            'events': event_registrations,  # Fixed: pass registrations, not event options
+            'events': event_registrations,
             'site_url': settings.SITE_URL,
         }
         
@@ -1410,7 +1490,7 @@ def send_registration_email(student, receipt):
         from_email = settings.EMAIL_HOST_USER
         to_email = [student.email]
         
-        # Create message
+        # Create message object
         msg = EmailMultiAlternatives(
             subject=subject,
             body=plain_message,
@@ -1419,50 +1499,20 @@ def send_registration_email(student, receipt):
         )
         msg.attach_alternative(html_message, "text/html")
         
-        # Send email synchronously with error handling
-        try:
-            msg.send(fail_silently=False)
-            logger.info(f'✅ Registration email sent successfully to {student.email}')
-            
-            # Update receipt status
-            receipt.email_sent = True
-            receipt.email_sent_at = timezone.now()
-            receipt.save(update_fields=['email_sent', 'email_sent_at'])
-            
-            return True
-            
-        except Exception as smtp_error:
-            logger.error(f'❌ SMTP Error sending email to {student.email}: {smtp_error}')
-            # Log but don't raise - payment already succeeded
-            
-            # Try to notify admin
-            try:
-                admin_subject = f'Failed Email Notification - {student.registration_id}'
-                admin_msg = f"""
-Failed to send registration email to {student.email}
-
-Student: {student.name}
-Registration ID: {student.registration_id}
-Receipt: {receipt.receipt_number}
-
-Error: {str(smtp_error)}
-
-Please manually send confirmation email.
-                """
-                send_mail(
-                    admin_subject,
-                    admin_msg,
-                    settings.EMAIL_HOST_USER,
-                    [settings.EMAIL_HOST_USER],
-                    fail_silently=True
-                )
-            except:
-                pass  # Don't let admin notification failure affect anything
-                
-            return False
+        # Send email asynchronously
+        send_email_async(msg)
+        
+        logger.info(f'✅ Registration email for {student.email} queued for sending.')
+        
+        # Optimistically update receipt status
+        receipt.email_sent = True
+        receipt.email_sent_at = timezone.now()
+        receipt.save(update_fields=['email_sent', 'email_sent_at'])
+        
+        return True
             
     except Exception as e:
-        logger.error(f'❌ Error preparing registration email for {student.email}: {e}', exc_info=True)
+        logger.error(f'❌ Error preparing or queuing registration email for {student.email}: {e}', exc_info=True)
         return False
 
 
@@ -1474,7 +1524,7 @@ def generate_qr_code(request, receipt_number):
     try:
         receipt = get_object_or_404(Receipt, receipt_number=receipt_number)
         verification_url = request.build_absolute_uri(
-            reverse('verify_receipt', kwargs={'receipt_number': receipt.receipt_number})
+            reverse('registration:verify_receipt', kwargs={'receipt_number': receipt.receipt_number})
         )
         
         qr = qrcode.QRCode(
@@ -2143,7 +2193,7 @@ def student_registration(request, package_type=None, bundle_id=None):
                     f'Please complete payment within 30 minutes.'
                 )
                 
-                return redirect('payment_instructions', payment_id=payment.id)
+                return redirect('registration:payment_instructions', payment_id=payment.id)
 
             except ValueError as ve:
                 logger.error(f'Validation error: {ve}')

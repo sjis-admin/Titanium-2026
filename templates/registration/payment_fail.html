@@ -76,13 +76,15 @@
                 
                 <div class="space-y-3">
                     <!-- Retry Payment Button -->
-                    <a href="{% url 'payment_gateway' student.id %}" 
+                    {% if can_retry %}
+                    <a href="{% url 'registration:retry_payment' payment.id %}" 
                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>
                         Try Payment Again
                     </a>
+                    {% endif %}
                     
                     <!-- Contact Support -->
                     <a href="mailto:sjismathclub@gmail.com?subject=Payment Failed - {{ student.registration_id }}&body=Transaction ID: {{ request.GET.tran_id }}%0AStudent Name: {{ student.name }}%0AAmount: ৳{{ student.total_amount }}" 
@@ -94,7 +96,7 @@
                     </a>
                     
                     <!-- Go to Home -->
-                    <a href="{% url 'home' %}" 
+                    <a href="{% url 'registration:home' %}" 
                        class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -113,12 +115,4 @@
     </div>
 </div>
 
-<script>
-// Auto-refresh page after 30 seconds if payment is still pending
-setTimeout(function() {
-    if (confirm('Would you like to check if your payment was processed successfully?')) {
-        window.location.href = "{% url 'payment_gateway' student.id %}";
-    }
-}, 30000);
-</script>
 {% endblock %}

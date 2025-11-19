@@ -5,17 +5,28 @@ PRODUCTION-READY with Security Enhancements
 
 from pathlib import Path
 import os
-from decouple import config
+from decouple import config, Csv
 from decimal import Decimal
+import dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Explicitly load .env file from the project root
+dotenv_path = BASE_DIR / '.env'
+load_dotenv(dotenv_path=dotenv_path)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-f9kn#^oe2jf13wgj74(zw0v3x=%j%%rz%(%p&l=)g6dql*i)4x')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
+
+# TESTING FLAG - ADD THIS
+import sys
+TESTING = 'test' in sys.argv
+
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 
@@ -69,23 +80,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'titanium_science_club.wsgi.application'
 
-# Database - Default to SQLite for development
+# Database - Configured with dj-database-url
+# For local development, set DATABASE_URL in .env to "sqlite:///db.sqlite3"
+# For production, set DATABASE_URL to your PostgreSQL connection string, e.g., "postgres://user:password@host:port/dbname"
 DATABASES = {
-    'default': {
-        'ENGINE': config('DB_ENGINE', default='django.db.backends.sqlite3'),
-        'NAME': config('DB_NAME', default=BASE_DIR / 'db.sqlite3'),
-        'USER': config('DB_USER', default=''),
-        'PASSWORD': config('DB_PASSWORD', default=''),
-        'HOST': config('DB_HOST', default=''),
-        'PORT': config('DB_PORT', default=''),
-    }
+    'default': dj_database_url.config(default=config('DATABASE_URL'))
 }
-
-# Add MySQL options only if using MySQL
-if DATABASES['default']['ENGINE'].endswith('mysql'):
-    DATABASES['default']['OPTIONS'] = {
-        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-    }
+# Add SSL require for postgres
+if 'postgres' in DATABASES['default']['ENGINE']:
+    DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -134,14 +137,18 @@ else:
     SSLCOMMERZ_VALIDATION_URL = "https://securepay.sslcommerz.com/validator/api/validationserverAPI.php"
 
 
-# Email Settings for Google Workspace Gmail
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='')
+# Email Settings
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    # Use SMTP backend for production
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
 
 # Security Settings for Production
 if not DEBUG:
@@ -172,7 +179,7 @@ SESSION_SAVE_EVERY_REQUEST = True
 # Cache Configuration
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
@@ -326,12 +333,8 @@ SSLCOMMERZ_RETRY_DELAY = 2  # seconds
 # Enhanced Security Settings
 SECURE_PAYMENT_PROCESSING = {
     'ENABLE_HASH_VERIFICATION': True,
-    'ENABLE_IP_WHITELISTING': False,  # Set to True if you want to whitelist SSLCommerz IPs
-    'SSLCOMMERZ_IPS': [
-        # Add SSLCommerz server IPs here if IP whitelisting is enabled
-        '103.106.118.10',
-        '103.106.118.11',
-    ],
+    'ENABLE_IP_WHITELISTING': config('SSLCZ_ENABLE_IP_WHITELISTING', default=False, cast=bool),
+    'SSLCOMMERZ_IPS': config('SSLCZ_IP_WHITELIST', default='', cast=lambda v: [s.strip() for s in v.split(',') if s.strip()]),
     'MAX_CALLBACK_RETRIES': 3,
     'CALLBACK_TIMEOUT_SECONDS': 30,
 }

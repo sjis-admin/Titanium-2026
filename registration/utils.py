@@ -348,33 +348,25 @@ def generate_secure_transaction_id():
     return f"TSC2025-{timestamp[-6:]}{random_part}"
 
 class EmailThread(Thread):
-    def __init__(self, subject, message, from_email, recipient_list, html_message):
-        self.subject = subject
-        self.message = message
-        self.from_email = from_email
-        self.recipient_list = recipient_list
-        self.html_message = html_message
+    def __init__(self, email_message):
+        self.email_message = email_message
         super().__init__()
 
     def run(self):
         try:
-            send_mail(
-                self.subject,
-                self.message,
-                self.from_email,
-                self.recipient_list,
-                html_message=self.html_message,
-                fail_silently=False
-            )
-            logger.info(f'Email sent successfully to {self.recipient_list}')
+            self.email_message.send(fail_silently=False)
+            logger.info(f'Email sent successfully to {self.email_message.to}')
         except Exception as e:
-            logger.error(f'Failed to send email to {self.recipient_list}: {e}')
+            logger.error(f'Failed to send email to {self.email_message.to}: {e}')
 
-def send_email_async(subject, message, from_email, recipient_list, html_message=None):
+def send_email_async(email_message):
     """
-    Send email asynchronously using a thread.
+    Send an email asynchronously using a thread.
+    
+    Args:
+        email_message: A pre-built Django email object (e.g., EmailMessage or EmailMultiAlternatives).
     """
-    EmailThread(subject, message, from_email, recipient_list, html_message).start()
+    EmailThread(email_message).start()
 
 def send_notification_email(to_email, subject, message, html_message=None):
     """

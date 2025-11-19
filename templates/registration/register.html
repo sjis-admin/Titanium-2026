@@ -15,7 +15,7 @@ Register - Regular Package
     <div class="mb-8">
         <div class="flex items-center justify-between bg-white rounded-xl shadow-lg p-6">
             <div class="flex items-center space-x-4">
-                <a href="{% url 'package_selection' %}" 
+                <a href="{% url 'registration:package_selection' %}" 
                    class="text-gray-600 hover:text-gray-900 transition-colors">
                     <i class="fas fa-arrow-left text-2xl"></i>
                 </a>
@@ -89,7 +89,7 @@ Register - Regular Package
     <!-- Registration Form -->
     <div class="bg-white rounded-2xl shadow-xl p-8">
         <form method="post" class="space-y-6" id="registration-form" 
-              action="{% if is_bundle_registration %}{% url 'register_bundle' selected_bundle.id %}{% else %}{% url 'register_regular' %}{% endif %}">
+              action="{% if is_bundle_registration %}{% url 'registration:register_bundle' selected_bundle.id %}{% else %}{% url 'registration:register_regular' %}{% endif %}">
             {% csrf_token %}
             
             <!-- Hidden fields -->
@@ -191,7 +191,7 @@ Register - Regular Package
                             Group (Auto-selected)
                         </label>
                         <div id="group-display"
-                             hx-get="{% url 'get_group_for_grade' %}" 
+                             hx-get="{% url 'registration:get_group_for_grade' %}" 
                              hx-trigger="change from:#id_grade"
                              hx-include="#id_grade"
                              hx-target="this"
@@ -244,7 +244,7 @@ Register - Regular Package
                 </h2>
                 
                 <div id="event-list" 
-                     hx-get="{% url 'get_events_for_grade' %}" 
+                     hx-get="{% url 'registration:get_events_for_grade' %}" 
                      hx-trigger="change from:#id_grade" 
                      hx-include="#id_grade"
                      hx-target="this" 
@@ -423,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateTotal() {
         {% if not is_bundle_registration %}
         if (typeof htmx !== 'undefined') {
-            htmx.ajax('POST', '{% url "calculate_total" %}', {
+            htmx.ajax('POST', '{% url "registration:calculate_total" %}', {
                 target: '#total-amount',
                 swap: 'innerHTML',
                 source: form

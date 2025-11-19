@@ -171,7 +171,7 @@
                 </div>
             </div>
             <div class="mt-4">
-                <a href="{% url 'home' %}" 
+                <a href="{% url 'registration:home' %}" 
                    class="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition-all">
                     <i class="fas fa-home mr-2"></i> Back to Home
                 </a>
@@ -223,12 +223,12 @@
 
             <div class="flex flex-col sm:flex-row gap-3">
                 {% if payment.is_expired %}
-                <a href="{% url 'retry_payment' payment_id=payment.id %}" 
+                <a href="{% url 'registration:retry_payment' payment_id=payment.id %}" 
                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-center transition-all">
                     <i class="fas fa-redo mr-2"></i> Retry Payment
                 </a>
                 {% else %}
-                <a href="{% url 'payment_instructions' payment_id=payment.id %}" 
+                <a href="{% url 'registration:payment_instructions' payment_id=payment.id %}" 
                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-center transition-all">
                     <i class="fas fa-credit-card mr-2"></i> Complete Payment
                 </a>
@@ -253,7 +253,7 @@
                 <li>The payment was cancelled</li>
             </ul>
             <div class="flex gap-3">
-                <a href="{% url 'register' %}" 
+                <a href="{% url 'registration:register' %}" 
                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all">
                     <i class="fas fa-user-plus mr-2"></i> Register Again
                 </a>
@@ -267,7 +267,7 @@
 
         <!-- Back Button -->
         <div class="text-center">
-            <a href="{% url 'check_registration_status' %}" 
+            <a href="{% url 'registration:check_registration_status' %}" 
                class="inline-block text-blue-600 hover:text-blue-800 font-semibold">
                 <i class="fas fa-arrow-left mr-2"></i> Check Another Registration
             </a>

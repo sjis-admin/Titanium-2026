@@ -427,7 +427,7 @@
             
             <div class="verification-section">
                 <div style="font-weight: bold; margin: 10px 0;">RECEIPT VERIFICATION</div>
-                <img src="{% url 'generate_qr_code' receipt.receipt_number %}" alt="Verification QR Code" class="qr-code">
+                <img src="{% url 'registration:generate_qr_code' receipt.receipt_number %}" alt="Verification QR Code" class="qr-code">
                 <div style="font-size: 9px; margin-top: 5px;">
                     Scan QR code to verify authenticity<br>
                     Generated on: {{ receipt.generated_at|date:"d/m/Y \a\\t H:i" }}

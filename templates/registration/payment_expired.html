@@ -68,13 +68,13 @@
     </div>
 
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="{% url 'retry_payment' payment_id=payment.id %}" 
+        <a href="{% url 'registration:retry_payment' payment_id=payment.id %}" 
            class="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-4 px-8 rounded-xl text-lg text-center transition-all transform hover:scale-105 shadow-lg">
             <i class="fas fa-redo mr-2"></i>
             Retry Payment
         </a>
         
-        <a href="{% url 'register' %}" 
+        <a href="{% url 'registration:register' %}" 
            class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 px-8 rounded-xl text-lg text-center transition-all">
             <i class="fas fa-user-plus mr-2"></i>
             Register Again

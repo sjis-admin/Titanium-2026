@@ -357,8 +357,8 @@ class Payment(models.Model):
     decimal_places=2,
     validators=[MinValueValidator(Decimal('0.01'))]   # ✅ fixed
     )
-    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, blank=True)
-    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='PENDING')
+    payment_method = models.CharField(max_length=100, choices=PAYMENT_METHOD_CHOICES, blank=True)
+    status = models.CharField(max_length=50, choices=PAYMENT_STATUS_CHOICES, default='PENDING')
     
     # SSL Commerz specific fields
     sessionkey = models.CharField(max_length=200, blank=True)

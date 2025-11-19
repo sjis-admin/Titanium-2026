@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment Error - Titanium Science Club{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-16">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 text-center">
+        <div class="mb-6">
+            <svg class="w-20 h-20 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+        
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">{{ error|default:"Payment Error" }}</h1>
+        
+        <p class="text-gray-600 mb-6">
+            {{ message|default:"An error occurred during payment processing." }}
+        </p>
+        
+        {% if transaction_id %}
+        <div class="bg-gray-100 rounded p-4 mb-6">
+            <p class="text-sm text-gray-600">Transaction ID:</p>
+            <p class="font-mono text-sm font-bold">{{ transaction_id }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="space-y-3">
+            <a href="{% url 'registration:package_selection' %}" 
+               class="block w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+                Try Again
+            </a>
+            
+            <p class="text-sm text-gray-500">
+                Need help? Contact us at <a href="mailto:support@sjis.edu.bd" class="text-blue-600 hover:underline">support@sjis.edu.bd</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

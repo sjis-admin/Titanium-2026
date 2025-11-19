@@ -115,21 +115,21 @@
 
     <!-- Action Buttons -->
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="{% url 'receipt_print_view' receipt.receipt_number %}" 
+        <a href="{% url 'registration:receipt_print_view' receipt.receipt_number %}" 
            target="_blank"
            class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
             <i class="fas fa-print mr-2"></i>
             Print Receipt
         </a>
         
-        <a href="{% url 'generate_qr_code' receipt.receipt_number %}" 
+        <a href="{% url 'registration:generate_qr_code' receipt.receipt_number %}" 
            target="_blank"
            class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors">
             <i class="fas fa-qrcode mr-2"></i>
             View QR Code
         </a>
         
-        <a href="{% url 'home' %}" 
+        <a href="{% url 'registration:home' %}" 
            class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors">
             <i class="fas fa-home mr-2"></i>
             Back to Home
